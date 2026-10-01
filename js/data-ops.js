@@ -164,6 +164,17 @@ function exportData() {
   a.click();
   URL.revokeObjectURL(url);
 }
+/* 清空所有数据（破坏性）：清空空间/路径/记录/连线/路径-记录，保留 UI 配置（自定义列、图标、列宽）。
+   调用前需经确认（见 events.js 绑定），清空后落盘并重渲染。 */
+function clearData() {
+  state.spaces.length = 0;
+  state.paths.length = 0;
+  state.records.length = 0;
+  state.connections.length = 0;
+  state.pathRecords.length = 0;
+  saveState();
+  render();
+}
 function importData(e) {
   const f = e.target.files[0];
   if (!f) return;

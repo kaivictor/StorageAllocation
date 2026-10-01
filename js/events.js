@@ -485,6 +485,12 @@ function initEvents() {
   $('#btn-export').addEventListener('click', exportData);
   $('#btn-import').addEventListener('click', () => $('#file-import').click());
   $('#file-import').addEventListener('change', importData);
+  $('#btn-clear').addEventListener('click', () => {
+    if (window.confirm('确定要清空所有数据吗？此操作不可撤销。')) {
+      clearData();
+      showToast('已清空所有数据');
+    }
+  });
 
   window.addEventListener('resize', () => { drawConnections(); drawStructLinks(); });
 }
