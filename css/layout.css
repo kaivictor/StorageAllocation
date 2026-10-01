@@ -1,0 +1,67 @@
+/* ---------- 面板 ---------- */
+.panel-scroll {
+  flex: 1 1 auto;
+  overflow: auto;
+  min-height: 0;
+}
+.panel {
+  position: relative;
+  display: flex;
+  gap: 0;
+  padding: 18px;
+  width: max-content;
+  margin: 0 auto;   /* 画布窗口水平居中；内容超出视口时 auto 外边距归零并允许横向滚动 */
+  align-items: flex-start;
+}
+
+.group {
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.group-left { flex: 0 0 auto; }
+.group-right { flex: 0 0 auto; margin-left: 120px; }
+
+.group-body { display: flex; flex-direction: column; flex: 1 1 auto; }
+/* 列头样式统一为右列（lane-head）风格：无背景、26px、细实线下边框、淡色文字 */
+.col-head-row { display: flex; }
+.col-head-cell {
+  height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 10px;
+  font-size: 12px;
+  /* color: var(--ink-faint); */
+  color: black;
+  white-space: nowrap;
+}
+/* 列头/泳道头对齐方式 */
+.align-right  { text-align: right;  justify-content: flex-end; }
+.align-center { text-align: center; justify-content: center; }
+.align-left   { text-align: left;   justify-content: flex-start; padding-left: 8px; }
+
+.rows {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 14px;
+  padding: 14px 12px;
+}
+
+.subcol-info { display: flex; justify-content: flex-end; align-items: center; }
+.subcol-space { flex: 0 0 auto; width: max-content; }
+/* 空间节点在等高的行内垂直居中，使其与“空间信息”块居中对齐 */
+.cell.subcol-space { display: flex; align-items: center; }
+.subcol-path { flex: 0 0 auto; width: max-content; }
+.subcol-alias { flex: 0 0 auto; width: max-content; }
+.subcol-freq { flex: 0 0 auto; width: max-content; }
+.subcol-size { flex: 0 0 auto; width: max-content; }
+.subcol-purpose { flex: 0 0 auto; width: 200px; justify-content: flex-start; }
+.subcol-structure { flex: 0 0 auto; width: max-content; }
+
+.row { display: flex; align-items: stretch; }
+.row > .cell { flex: 0 0 auto; }
+.row > .cell:last-child { border-right: none; }
+.cell.subcol-structure { flex: 0 0 auto; }
+

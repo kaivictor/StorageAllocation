@@ -1,0 +1,247 @@
+/* ---------- 数据行 ---------- */
+.data-cell {
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  position: relative;
+  transition: .15s;
+}
+.data-cell:hover { border-color: var(--line); background: #fcfdff; }
+.data-anchor {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--data);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px var(--data);
+  cursor: crosshair;
+  z-index: 3;
+}
+.data-anchor:hover { transform: translateY(-50%) scale(1.3); }
+
+.cell-text { color: var(--ink); line-height: 1.5; }
+.cell-faint { color: var(--ink-faint); }
+
+.path-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.path-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 14px;
+}
+.data-tools {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: 14px;
+}
+.data-del {
+  cursor: pointer;
+  color: var(--move-out);
+  font-size: 11px;
+}
+.data-del:hover { text-decoration: underline; }
+.path-node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 12px;
+  cursor: default;
+  transition: .15s;
+}
+.path-node .path-input {
+  flex: 0 1 auto;
+  min-width: 18px;
+  width: auto;
+  border-color: transparent;
+  background: transparent;
+  padding: 1px 2px;
+  font: inherit;
+}
+.path-node .path-input:focus { border-color: var(--brand); background: #fff; }
+.path-node.is-app { background: #f3effe; }
+/* 叶子路径（无斜杠）：obsidian 式背景，与 is-app 同为 #f3effe */
+.path-node.is-leaf { background: #f3effe; }
+.path-node.is-leaf .path-input:focus { background: #fff; border-color: var(--brand); }
+.path-node.is-sub { margin-left: 16px; width: calc(100% - 16px); }  /* 缩进仅发生在左侧，右缘与父节点对齐 */
+.path-prefix { display: none; color: var(--ink-faint); margin-right: 1px; font: inherit; }
+.path-node.is-sub:hover .path-prefix { display: inline; }
+/* 进入编辑态（editing）：输入框已切换为完整路径，隐藏父级前缀，避免重复显示 */
+.path-node.editing .path-prefix { display: none !important; }
+.path-node:hover { background: #f6f8ff; }
+.path-anchor {
+  position: absolute; left: -16px; top: 50%; transform: translateY(-50%);
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--data); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--data);
+  cursor: crosshair; flex: 0 0 auto;
+}
+.path-anchor:hover { transform: translateY(-50%) scale(1.3); }
+.path-add-sib {
+  margin-left: auto;
+  font-size: 10px; padding: 1px 6px; border-radius: 5px;
+  border: 1px solid var(--line-strong); background: #fff; color: var(--ink-faint); cursor: pointer;
+}
+.path-add-sib:hover { background: var(--brand-soft); color: var(--brand); }
+/* 用途列：保留基础 .attr-node 的绝对定位（JS 垂直居中），改为 left:0 + right:0 使其横向撑满整列，
+   以便列宽可拖拽调整。子级数量徽标与“+”为普通 flex 子项（flex:0 0 auto）排在 textarea 右侧，
+   textarea 以 flex:1 填满剩余宽度，列变宽时用途内容同步变宽。 */
+.lane-purpose .attr-node { display: flex; align-items: center; gap: 6px; width: auto; left: 0; right: 0; }
+.rec-add-sib {
+  font-size: 10px; padding: 1px 6px; border-radius: 5px;
+  border: 1px solid var(--line-strong); background: #fff; color: var(--ink-faint); cursor: pointer;
+  flex: 0 0 auto;
+}
+.rec-add-sib:hover { background: var(--brand-soft); color: var(--brand); }
+.row-del {
+  position: absolute; top: 2px; right: 4px;
+  cursor: pointer; color: var(--move-out); font-size: 12px; line-height: 1;
+  opacity: 0; transition: .12s; z-index: 4;
+}
+.data-cell:hover .row-del { opacity: 1; }
+
+/* 路径节点悬浮工具条：删除 / APP / 设为子文件夹 */
+.path-tools {
+  position: absolute;
+  top: -12px; left: calc(100% + 6px);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 2px 5px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: .12s;
+  z-index: 6;
+}
+.path-node:hover .path-tools { opacity: 1; pointer-events: auto; }
+.path-del {
+  cursor: pointer;
+  color: var(--move-out);
+  font-size: 13px; line-height: 1;
+}
+.path-app-btn {
+  font-size: 10px; padding: 1px 6px; border-radius: 5px;
+  border: 1px solid var(--line-strong); background: #fff; color: var(--ink-faint); cursor: pointer;
+}
+.path-app-btn.on { background: var(--data); color: #fff; border-color: var(--data); }
+.path-parent-sel {
+  font-size: 10px; max-width: 96px;
+  border: 1px solid var(--line-strong); border-radius: 5px; background: #fff; color: var(--ink);
+}
+.path-add-sub {
+  font-size: 10px; padding: 1px 6px; border-radius: 5px;
+  border: 1px solid #b9cdf7; background: var(--brand-soft); color: var(--brand); cursor: pointer;
+}
+.path-add-sub:hover { background: #dfe8ff; }
+.path-add {
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border: 1px dashed #b9cdf7;
+  border-radius: 6px;
+  padding: 1px 8px;
+  cursor: pointer;
+}
+.path-add:hover { background: #dfe8ff; }
+
+/* size cell */
+.size-row { display: flex; align-items: center; gap: 1px; }
+.size-row input { width: 56px; text-align: right; }
+.size-row select { width: 56px; }
+.size-row .dd-unit { width: 30px; }
+
+/* ---------- 结构树 ---------- */
+.struct-tree { display: flex; align-items: center; }
+.struct-node {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: transparent;
+  white-space: nowrap;
+  position: relative;
+}
+/* 结构列：仅渲染“用途”根下的二级子节点（根是用途列里的用途 attr-node） */
+.struct-tree .toggle {
+  cursor: pointer; width: 14px; height: 14px;
+  border-radius: 4px; border: 1px solid var(--line-strong);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; color: var(--ink-soft); background: #f7f9fd;
+}
+.struct-tree .node-add {
+  cursor: pointer; color: var(--brand); font-weight: 700;
+  width: 14px; text-align: center;
+}
+/* 直接子级数量：小圆形徽标 */
+.child-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 16px; height: 16px; padding: 0 5px;
+  border-radius: 999px;
+  background: var(--brand-soft, #e8f1ff); color: var(--brand, #0a84ff);
+  font-size: 10px; font-weight: 700; line-height: 1;
+  user-select: none;
+}
+/* 可单击折叠/展开的数字徽标（有子级时） */
+.child-count[data-action="toggle"] { cursor: pointer; }
+.child-count[data-action="toggle"]:hover { background: var(--brand, #0a84ff); color: #fff; }
+.struct-children {
+  display: flex; flex-direction: column; gap: 2px;
+  margin-left: 16px;
+}
+.struct-children.collapsed { display: none; }
+
+/* ---------- 编辑态 ---------- */
+input.inline-edit, select.inline-edit {
+  font: inherit;
+  border: 1px solid var(--brand);
+  border-radius: 6px;
+  padding: 2px 0;
+  outline: none;
+  width: auto;
+  min-width: 18px;
+  max-width: 240px;
+  field-sizing: content;
+  background: #fff;
+  color: var(--ink);
+}
+textarea.inline-edit {
+  font: inherit; border: 1px solid var(--brand); border-radius: 6px;
+  padding: 2px 6px; outline: none; width: auto; max-width: 320px; min-width: 120px;
+  field-sizing: content; resize: vertical;
+}
+
+/* 只读/禁用（默认）：输入框呈纯文本外观；可编辑（双击后）显示边框 */
+.inline-edit[readonly], .inline-edit:disabled {
+  border-color: transparent;
+  background: transparent;
+  cursor: default;
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 2px;
+}
+.inline-edit[readonly]:focus, .inline-edit:disabled:focus { outline: none; box-shadow: none; }
+.inline-edit:disabled { color: var(--ink); opacity: 1; }
+.inline-edit:not([readonly]):not(:disabled) { cursor: text; }

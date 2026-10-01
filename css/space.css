@@ -1,0 +1,68 @@
+/* ---------- 空间信息 ---------- */
+.space-info {
+  text-align: right;
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition: .15s;
+}
+.space-info:hover { background: transparent; border-color: transparent; }
+.si-account { font-weight: 600; color: var(--ink); }
+.si-field { display: flex; align-items: center; gap: 4px; }
+.si-field .inline-edit { flex: 0 1 auto; min-width: 10px; max-width: 200px; width: auto; field-sizing: content; padding: 0; }
+.si-label { flex: 0 0 auto; color: var(--ink-faint); font-size: 12px; }
+.si-combo { display: inline-flex; align-items: center; gap: 0; font-size: 12px; color: var(--ink-soft); }
+.si-combo .brk { color: var(--ink-faint); }
+.si-combo input.si-pill { width: auto; min-width: 10px; field-sizing: content; text-align: center; padding: 1px 0; border-left: none; border-right: none; }
+.si-combo input.si-unit { width: auto; min-width: 10px; field-sizing: content; text-align: center; padding: 1px 0; border-left: none; border-right: none; }
+.si-purpose { color: var(--ink-soft); }
+.si-remark { color: var(--ink-faint); font-size: 12px; font-style: italic; }
+.si-exclude { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ink-soft); cursor: pointer; }
+.si-exclude input { width: 14px; height: 14px; }
+/* ---------- 空间节点 ---------- */
+.space-node {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  position: relative;
+  transition: .15s;
+  cursor: pointer;
+}
+.space-node:hover { background: #fff; }
+.space-icon {
+  width: 42px; height: 42px;
+  flex: 0 0 42px;
+  border-radius: 10px;
+  background: #eef6f1;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+.space-icon svg { width: 30px; height: 30px; }
+.space-icon img { width: 100%; height: 100%; object-fit: cover; }
+.space-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.space-name { font-weight: 600; }
+.space-id { font-size: 11px; padding: 0 1px; color: var(--ink-faint); font-family: ui-monospace, monospace; }
+.space-anchor {
+  position: absolute;
+  right: -7px; top: 50%;
+  transform: translateY(-50%);
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--space);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px var(--space);
+  cursor: crosshair;
+  z-index: 3;
+}
+.space-anchor:hover { transform: translateY(-50%) scale(1.3); }

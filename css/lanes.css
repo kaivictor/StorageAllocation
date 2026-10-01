@@ -1,0 +1,146 @@
+/* ---------- 自由泳道图（右栏） ---------- */
+.right-canvas { display: flex; align-items: flex-start; position: relative; }
+.lane {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 0 6px;
+}
+.lane:last-child { border-right: none; }
+/* 所有列自适应宽度（按内容最宽者撑开，而非固定像素）；路径列额外由 JS 预留 hover 后最宽宽度 */
+.lane-path { flex: 0 0 auto; width: max-content; min-width: 0; }
+.lane-alias { flex: 0 0 auto; width: max-content; margin-left: 56px; } /* 路径与数据别称之间留一列空白 */
+.lane-freq { flex: 0 0 auto; width: max-content; }
+.lane-size { flex: 0 0 auto; width: max-content; }
+.lane-purpose { flex: 0 0 auto; width: 200px; }
+.lane-structure { flex: 0 0 auto; width: max-content; }
+/* 各列水平对齐（仅水平方向，不改动垂直布局） */
+.subcol-info { justify-content: flex-end; }                  /* 空间信息：右对齐 */
+.space-node { width: 100%; }                                 /* 空间：铺满列 */
+.lane-path .path-node { width: 100%; }                       /* 路径：铺满列（含 hover 后宽度） */
+.lane-alias .attr-node { text-align: left; }                 /* 数据别称：左对齐 */
+/* 每条记录“数据别称/频率/估计大小/用途”四个单元格的整体外框（由 JS 在定位后绘制）：白底 + 阴影，无边框 */
+.rec-frame {
+  position: absolute;
+  background: rgb(255, 255, 255);
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+  transition: background .15s, box-shadow .15s;
+}
+/* 弱化：hover 时非关联记录的白卡背景与阴影淡出，露出底色 */
+.rec-frame.faded { background: transparent; box-shadow: none; }
+.lane-freq .dd { justify-content: center; }                  /* 频率：水平居中 */
+.lane-freq .dd .dd-val { text-align: center; }
+.lane-purpose textarea.inline-edit { text-align: left; }    /* 用途：左对齐 */
+/* 用途列：限宽 200px 并自动换行 */
+.lane-purpose .attr-node { width: 100%; }
+.lane-purpose textarea.inline-edit {
+  width: 100%; max-width: none; min-height: 1.8em; resize: none;
+  flex: 1 1 auto; min-width: 0; box-sizing: border-box;
+  white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word;
+  line-height: 1.4;
+}
+.lane-head {
+  height: 26px; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: black;
+  margin-bottom: 8px; position: relative;
+}
+/* 泳道头对齐（覆盖 lane-head 默认的居中，确保左/右对齐生效） */
+.lane-head.align-right  { justify-content: flex-end; }
+.lane-head.align-center { justify-content: center; }
+.lane-head.align-left   { justify-content: flex-start; }
+.path-stack { display: flex; flex-direction: column; gap: 14px; position: relative; padding-left: 18px; }
+.attr-stack { position: relative; }
+/* 数据排序手柄：位于路径列左侧留白处、与路径节点同高（top 由 JS 设置） */
+.grip-float { position: absolute; left: 0; top: 0; }
+.attr-node {
+  position: absolute; left: 0; right: 0;
+  transform: translateY(-50%);
+}
+.alias-node {
+  display: flex; align-items: center; gap: 4px;
+  background: transparent; border-radius: 8px;
+  padding: 3px 8px;
+}
+.alias-node .inline-edit {
+  border-color: transparent; background: transparent; padding: 1px 2px;
+  font-weight: 600;
+}
+.alias-node .inline-edit:focus { border-color: var(--brand); background: #fff; }
+
+/* 长按拖动排序手柄与预览 */
+.grip { cursor: grab; color: var(--ink-faint); user-select: none; font-size: 13px; line-height: 1; padding: 0 2px; align-self: center; touch-action: none; }
+.grip:hover { color: var(--brand); }
+.grip:active { cursor: grabbing; }
+.reorder-ghost { opacity: .9; background: #fff; border: 1px solid var(--brand); border-radius: 8px; box-shadow: var(--shadow-lg); }
+.reordering { opacity: .3; }
+/* 拖拽时的流内落点占位框：插入文档流，把后续元素挤开，清晰显示最终落点 */
+.reorder-gap {
+  box-sizing: border-box; width: 100%; margin: 2px 0;
+  border: 2px dashed var(--brand); background: rgba(99, 102, 241, 0.14);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  color: var(--brand); font-size: 12px; font-weight: 600; letter-spacing: .5px;
+  pointer-events: none;
+}
+/* 被拖拽的原始元素：拖拽期间置灰，与跟随光标的浮影区分 */
+.dragging-ghost { opacity: .3; }
+
+/* 强调 / 弱化（路径节点与聚合属性节点） */
+.path-node.faded, .attr-node.faded { opacity: .25; filter: saturate(.4); }
+.path-node.active { outline: 2px solid var(--brand); outline-offset: 2px; }
+.attr-node.active { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 8px; }
+
+/* 泳道间“新增自定义属性”插入符：默认隐藏，hover 显示 + */
+.lane-inserter {
+  flex: 0 0 auto; width: 18px; align-self: stretch;
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+}
+.inserter-head {
+  height: 26px; display: flex; align-items: center; justify-content: center;
+  margin-bottom: 8px;
+}
+.inserter-add {
+  border: none; background: transparent; cursor: pointer;
+  width: 18px; height: 18px; border-radius: 50%;
+  font-size: 16px; line-height: 1; color: var(--brand);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .12s, background .12s;
+}
+.lane-inserter:hover .inserter-add { opacity: 1; }
+.inserter-add:hover { background: rgba(99, 102, 241, .14); }
+/* 用户自定义属性列 */
+.lane-custom .attr-node { text-align: left; }
+.custom-attr-head { width: 100%; }
+.custom-attr-name {
+  border-color: transparent; background: transparent; padding: 1px 4px;
+  font-weight: 600; text-align: center; max-width: 160px;
+}
+.custom-attr-name:focus { border-color: var(--brand); background: #fff; }
+/* 自定义属性列对齐（列头与值单元格统一） */
+/* 列头容器跟随泳道对齐（覆盖 .lane-head 默认的居中 justify-content） */
+.lane-custom.align-left .custom-attr-head { justify-content: flex-start; }
+.lane-custom.align-center .custom-attr-head { justify-content: center; }
+.lane-custom.align-right .custom-attr-head { justify-content: flex-end; }
+/* 值单元格输入框铺满，text-align 才表示内容对齐而非占位宽度 */
+.lane-custom .attr-node .inline-edit { width: 100%; box-sizing: border-box; }
+.lane-custom.align-left .custom-attr-name,
+.lane-custom.align-left .attr-node .inline-edit { text-align: left; }
+.lane-custom.align-center .custom-attr-name,
+.lane-custom.align-center .attr-node .inline-edit { text-align: center; }
+.lane-custom.align-right .custom-attr-name,
+.lane-custom.align-right .attr-node .inline-edit { text-align: right; }
+/* 列宽调整控件：位于 + 号下方，按住左右拖动调整其左侧列宽（光标为水平调整） */
+.inserter-resize {
+  position: absolute; left: 0; right: 0; top: 34px; bottom: 0;
+  cursor: col-resize; z-index: 6;
+}
+.inserter-resize::before {
+  content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 3px; height: 30px; border-radius: 3px;
+  background: var(--brand); opacity: 0; transition: opacity .1s;
+}
+.inserter-resize:hover::before, .inserter-resize.dragging::before { opacity: .6; }
+/* 仅含宽度控件的插入符（如 用途↔结构 之间）：无 +，拖拽区从顶部开始 */
+.lane-inserter.resize-only .inserter-resize { top: 0; }
+

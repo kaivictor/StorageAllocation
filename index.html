@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>空间分配面板</title>
+  <link rel="stylesheet" href="css/base.css?v=121" />
+  <link rel="stylesheet" href="css/layout.css?v=119" />
+  <link rel="stylesheet" href="css/space.css?v=119" />
+  <link rel="stylesheet" href="css/lanes.css?v=127" />
+  <link rel="stylesheet" href="css/data.css?v=121" />
+  <link rel="stylesheet" href="css/connections.css?v=119" />
+  <link rel="stylesheet" href="css/overlays.css?v=120" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">
+      <span class="logo">▤</span>
+      <h1>空间分配面板</h1>
+    </div>
+    <div class="toolbar">
+      <button id="btn-add-space" class="btn">+ 空间</button>
+      <button id="btn-add-data" class="btn">+ 数据</button>
+      <button id="btn-export" class="btn btn-primary">导出数据</button>
+      <button id="btn-import" class="btn">导入</button>
+      <input type="file" id="file-import" accept="application/json" hidden />
+      <button id="btn-theme" class="btn" title="切换明/暗主题">明</button>
+      <span class="hint">可直接编辑各输入框 · 从空间/数据锚点拖拽到另一端建立连线 · 点击连线编辑详情</span>
+    </div>
+  </header>
+
+  <main class="panel-scroll">
+    <div class="panel" id="panel">
+    <svg class="link-layer" id="link-layer" xmlns="http://www.w3.org/2000/svg"></svg>
+
+    <section class="group group-left">
+      <div class="group-body" id="left-body"></div>
+    </section>
+
+    <section class="group group-right">
+      <div class="group-body" id="right-body"></div>
+    </section>
+  </div>
+  </main>
+
+  <script src="js/state.js?v=120"></script>
+  <script src="js/utils.js?v=121"></script>
+  <script src="js/render.js?v=134"></script>
+  <script src="js/connections.js?v=123"></script>
+  <script src="js/data-ops.js?v=123"></script>
+  <script src="js/events.js?v=135"></script>
+  <script src="js/main.js?v=120"></script>
+</body>
+</html>
