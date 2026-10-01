@@ -31,6 +31,21 @@ function enterPathEdit(el) {
   const node = el.closest('.path-node');   // 标记编辑态：隐藏父级前缀，避免与完整路径重复
   if (node) node.classList.add('editing');
 }
+/* 路径输入框的“静态显示值”（不含父前缀）：叶子取裸文件名；文件夹取去掉父级完整前缀后的相对段。
+   与 pathNodeHTML 的显示一致，供失焦复位使用，避免保留完整路径导致与悬停前缀重复。 */
+function pathDisplayValue(p) {
+  if (!p) return '';
+  if (!p.text.endsWith('/')) {                 // 叶子：裸文件名
+    const cleaned = p.text.replace(/\/+$/, '');
+    return cleaned.split('/').pop() || p.text;
+  }
+  if (p.parent) {
+    let pf = fullPathOf(p.parent);
+    if (pf && !pf.endsWith('/')) pf += '/';
+    if (pf && p.text.startsWith(pf)) return p.text.slice(pf.length);
+  }
+  return p.text;
+}
 /* 某记录关联的全部路径 id（多对多） */
 function recordPathIds(rid) { return state.pathRecords.filter(pr => pr.recordId === rid).map(pr => pr.pathId); }
 /* 某路径关联的全部记录 id（多对多） */

@@ -394,16 +394,11 @@ function pathNodeHTML(pid, p) {
   /* 叶子路径（不以 '/' 结尾）：obsidian 样式，不带父路径前缀，仅显示裸文件名（basename）；
      文件夹路径（以 '/' 结尾）：沿用原样，父级完整前缀由 path-prefix 呈现（显示不变） */
   const isLeaf = !p.text.endsWith('/');
-  let prefix = '', displayText;
-  if (isLeaf) {
-    const cleaned = p.text.replace(/\/+$/, '');
-    displayText = cleaned.split('/').pop() || p.text;
-  } else {
-    const parentFullRaw = p.parent ? fullPathOf(p.parent) : '';
-    const parentFull = parentFullRaw && !parentFullRaw.endsWith('/') ? parentFullRaw + '/' : parentFullRaw;
-    prefix = p.parent ? parentFull : '';
-    displayText = (p.parent && parentFull && p.text.startsWith(parentFull)) ? p.text.slice(parentFull.length) : p.text;
-  }
+  const parentFullRaw = p.parent ? fullPathOf(p.parent) : '';
+  const parentFull = parentFullRaw && !parentFullRaw.endsWith('/') ? parentFullRaw + '/' : parentFullRaw;
+  /* 仅当文本确实以父级完整前缀开头时才显示前缀，否则不显示（避免父级与文本不一致时重复） */
+  let prefix = (p.parent && parentFull && p.text.startsWith(parentFull)) ? parentFull : '';
+  const displayText = pathDisplayValue(p);
   /* 按父链深度计算缩进：第 n 级子文件夹缩进 n*16px，使第三级明显大于第二级 */
   let depth = 0, _cur = p;
   while (_cur && _cur.parent) { depth++; _cur = getPath(_cur.parent); }

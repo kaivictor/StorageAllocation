@@ -433,7 +433,14 @@ function initEvents() {
     const to = e.relatedTarget;
     if (to && to.closest && to.closest('.inline-edit') === el) return;
     if (el.tagName === 'SELECT') el.disabled = true; else el.readOnly = true;
-    if (el.classList.contains('path-input')) { const n = el.closest('.path-node'); if (n) n.classList.remove('editing'); }
+    if (el.classList.contains('path-input')) {
+      /* 离开编辑态：即便用户未改动（change 不触发），也把输入框复位为“相对显示值”，
+         避免保留 enterPathEdit 写入的完整路径，导致悬停时前缀与其重复显示 */
+      const arr = el.dataset.path ? parr(el.dataset.path) : null;
+      const p = arr && arr[0] === 'paths' ? getPath(arr[1]) : null;
+      if (p) el.value = pathDisplayValue(p);
+      const n = el.closest('.path-node'); if (n) n.classList.remove('editing');
+    }
   });
   /* 记录最近编辑的路径/记录，供结构“+”定位目标 */
   document.addEventListener('focusin', (e) => {

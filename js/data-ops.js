@@ -153,10 +153,14 @@ function nearestPathId(y) {
 }
 
 function exportData() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  /* 导出时间后缀（用 _ 连接；时间部分用 - 而非 :，避免 Windows 文件名非法字符） */
+  const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'storage-allocation.json';
+  a.href = url; a.download = `storage-allocation_${stamp}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
