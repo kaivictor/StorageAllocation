@@ -104,6 +104,7 @@ function loadState() {
         if (m) max = Math.max(max, +m[2]);
       }
       uid = Math.max(uid, max);
+      recomputeParents();   // 载入后重算父子：纠正可能陈旧的 parent 字段（影响缩进/连线/强调）
       return true;
     }
   } catch (e) { /* 解析失败则回退到默认示例数据 */ }

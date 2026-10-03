@@ -839,7 +839,14 @@ function commitChange(arr, value) {
   }
   if (arr[0] === 'records' && arr[2] === 'custom') { const rec = getRecord(arr[1]); if (rec) rec.custom = rec.custom || {}; }
   setByPath(arr, value);
-  if (key === 'text' && arr[0] === 'paths') autoParent(arr[1]); // 路径文本变化：按前缀自动识别父子
+  if (key === 'text' && arr[0] === 'paths') {
+    /* 路径文本变化：按前缀重新识别父子。
+       不仅要重算被编辑路径的父级，还要重算其余路径——新增/改名的路径可能成为
+       已有路径的新父级（例如先有 /test/test1/ 后补 /test/，/test/test1/ 的 parent
+       需重新识别），否则子→父连线（右侧线）会缺失。 */
+    autoParent(arr[1]);
+    for (const q of state.paths) if (q.id !== arr[1]) autoParent(q.id);
+  }
   render();
 }
 

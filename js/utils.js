@@ -109,6 +109,12 @@ function autoParent(pid) {
   }
   p.parent = best;
 }
+/* 重新识别全部路径的父子关系：用于从持久化/导入数据载入后，纠正可能陈旧的 parent 字段。
+   否则依赖 parent 的缩进（depth）、子→父连线、强调中立判定都会与“按文本前缀实时推导”的
+   显示前缀不一致（如同级文件夹与叶子缩进不同）。 */
+function recomputeParents() {
+  for (const p of state.paths) autoParent(p.id);
+}
 
 const statusClass = (st) => ({
   '正常': 'link-normal', '待备份': 'link-pending',

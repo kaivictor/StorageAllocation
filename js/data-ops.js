@@ -202,6 +202,7 @@ function importData(e) {
           if (m) max = Math.max(max, +m[2]);
         }
         uid = Math.max(uid, max);   // 同步计数器，避免导入后新增 id 冲突
+        recomputeParents();         // 导入后重算父子：纠正可能陈旧的 parent 字段
         render();
       } else alert('文件格式不正确（需要含 spaces/paths/records/connections/pathRecords）');
     } catch (err) { alert('解析失败：' + err.message); }
