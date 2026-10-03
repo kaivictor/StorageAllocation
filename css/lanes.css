@@ -72,6 +72,7 @@
 
 /* 长按拖动排序手柄与预览 */
 .grip { cursor: grab; color: var(--ink-faint); user-select: none; font-size: 13px; line-height: 1; padding: 0 2px; align-self: center; touch-action: none; }
+.space-node .grip { margin-left: auto; }   /* 在节点内右对齐 */
 .grip:hover { color: var(--brand); }
 .grip:active { cursor: grabbing; }
 .reorder-ghost { opacity: .9; background: #fff; border: 1px solid var(--brand); border-radius: 8px; box-shadow: var(--shadow-lg); }
