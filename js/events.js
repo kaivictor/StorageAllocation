@@ -12,6 +12,16 @@ function initEvents() {
         if (pf && !pf.endsWith('/')) pf += '/';
         if (!value.startsWith(pf)) value = pf + value;
       }
+      /* 重命名不允许与已有路径（除自身）完全相同：完整路径唯一 */
+      if (p) {
+        const v = typeof value === 'string' ? value.trim() : value;
+        if (state.paths.some(q => q.id !== p.id && q.text === v)) {
+          showToast('路径已存在，不能重复');
+          render();                 // 重建输入框为原 state 值，避免显示成重复内容
+          return;                   // 不写回 state、不重排、不重算父子
+        }
+        value = v;
+      }
     }
     if (arr[0] === 'records' && arr[2] === 'custom') { const rec = getRecord(arr[1]); if (rec) rec.custom = rec.custom || {}; }
     setByPath(arr, value);
@@ -378,6 +388,19 @@ function initEvents() {
     copyTimer = setTimeout(() => { copyTimer = null; copyText(fieldCopyText(el)); }, 250);
   });
 
+  /* 右栏按 X 坐标命中具体泳道后的新增路由：路径列→新增路径；数据别称/频率/估计大小/用途/
+     自定义属性列及任意两列间隙→新增记录（关联最近路径）；结构列不新增。
+     供“列内空白双击”与“面板空白区双击”复用，保证列内与列间隙行为一致 */
+  function addRightAt(x, y) {
+    const rc2 = $('#right-canvas');
+    const lane = rc2 && Array.from(rc2.querySelectorAll(':scope > .lane')).find(l => {
+      const r = l.getBoundingClientRect();
+      return x >= r.left && x <= r.right;
+    });
+    if (lane && lane.classList.contains('lane-path')) { addPathAt(y); return; }
+    if (lane && lane.classList.contains('lane-structure')) return;   // 结构列不新增
+    addRecordAt(y, nearestPathId(y));   // 记录列 / 自定义属性列 / 列间隙：新增记录
+  }
   document.addEventListener('dblclick', (e) => {
     if (e.target.closest('.inserter-add')) return;   // 插入符加号仅响应单击新增，忽略双击（避免误触发空白新增）
     if (copyTimer) { clearTimeout(copyTimer); copyTimer = null; }   // 双击编辑时不复制，保粘贴板不变
@@ -405,25 +428,35 @@ function initEvents() {
     const rc = $('#right-canvas');
     if (rc && rc.contains(e.target)) {
       if (e.target.closest('.lane-head')) return;   // 禁止在列头双击触发新增
-      const y = e.clientY;
-      const lanes = Array.from(rc.querySelectorAll(':scope > .lane'));
-      const lane = lanes.find(l => {
-        const r = l.getBoundingClientRect();
-        return e.clientX >= r.left && e.clientX <= r.right;
-      });
-      if (lane) {
-        if (lane.classList.contains('lane-path')) addPathAt(y);
-        else if (lane.classList.contains('lane-alias')) addDataAt('alias', y);
-        else if (lane.classList.contains('lane-freq')) addDataAt('freq', y);
-        else if (lane.classList.contains('lane-size')) addDataAt('size', y);
-        else if (lane.classList.contains('lane-purpose')) addDataAt('purpose', y);
-        /* 结构列空白双击：无功能（不新增记录、也不新增结构子节点） */
-        return;
-      }
+      addRightAt(e.clientX, e.clientY);
+      return;
     }
     const leftBody = e.target.closest('#left-body');
     if (leftBody && !e.target.closest('.row') && !e.target.closest('.col-head-row')) {
       addSpaceAt(e.clientY);
+      return;
+    }
+    /* 面板空白区（内容下方 / 滚动区）：两组高度随内容而定，其下方空白属于 .panel/.panel-scroll，
+       不在 #left-body 或 #right-canvas 内，故上面两个分支都命中不到。此处按 X 坐标判定命中
+       左/右分组，分别新增空间 / 记录（关联最近路径），与既有“列内空白双击新增”行为一致。 */
+    const panel = $('#panel');
+    const tgt = e.target;
+    const inEmpty = tgt === panel || tgt === (panel && panel.parentElement)
+      || (tgt.classList && (tgt.classList.contains('panel-scroll') || tgt.classList.contains('group')))
+      || tgt.tagName === 'BODY' || tgt.tagName === 'MAIN';
+    if (inEmpty) {
+      const grpLeft = $('.group-left'), grpRight = $('.group-right');
+      if (!grpLeft || !grpRight) return;
+      const lr = grpLeft.getBoundingClientRect();
+      const rr = grpRight.getBoundingClientRect();
+      if (e.clientX >= lr.left && e.clientX <= lr.right) {
+        addSpaceAt(e.clientY);
+      } else if (e.clientX >= rr.left && e.clientX <= rr.right) {
+        /* 右栏空白区：复用 addRightAt（与“列内空白双击”完全一致——
+           路径列→新增路径，记录列/自定义属性列/列间隙→新增记录，结构列不新增） */
+        addRightAt(e.clientX, e.clientY);
+      }
+      return;
     }
   });
   /* 失焦后按字段还原 */

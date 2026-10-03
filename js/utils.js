@@ -31,19 +31,45 @@ function enterPathEdit(el) {
   const node = el.closest('.path-node');   // 标记编辑态：隐藏父级前缀，避免与完整路径重复
   if (node) node.classList.add('editing');
 }
-/* 路径输入框的“静态显示值”（不含父前缀）：叶子取裸文件名；文件夹取去掉父级完整前缀后的相对段。
-   与 pathNodeHTML 的显示一致，供失焦复位使用，避免保留完整路径导致与悬停前缀重复。 */
+/* 计算路径应折叠隐藏的“父级前缀”：仅当 state.paths 中存在另一条路径，其文本恰为该路径的
+   合法父级时才返回该前缀（规范化为以 '/' 结尾）；否则返回 ''（显示完整路径）。
+   规则：前缀不等于任何“其他路径”时不隐藏前缀——
+   · 文件夹（以 '/' 结尾）：最长合法“/”前缀路径。例：只有 /test1/test2/ 而无 /test1/ → 显示完整；
+     有 /test1/ 则折叠为 test2/。
+   · 叶子文件（不以 '/' 结尾）：最后一个 '/' 之前的目录段为前缀。例：/test1/obsidian 有 /test1/ →
+     显示 obsidian；无 /test1/ → 显示完整 /test1/obsidian（不剥成 basename）。 */
+function parentPrefixOf(p) {
+  if (!p) return '';
+  const text = p.text;
+  if (text.endsWith('/')) {
+    /* 文件夹：最长合法“/”前缀路径 */
+    let best = '', bestLen = -1;
+    for (const q of state.paths) {
+      if (q.id === p.id) continue;
+      let qt = q.text;
+      if (!qt.endsWith('/')) qt += '/';
+      if (text.startsWith(qt) && qt.length < text.length && qt.length > bestLen) { best = qt; bestLen = qt.length; }
+    }
+    return best;
+  }
+  /* 叶子（文件）：目录前缀 = 最后一个 '/' 之前（含）的部分；恰为某条存在的路径（或其最长前缀）才隐藏 */
+  const i = text.lastIndexOf('/');
+  if (i <= 0) return '';                       // 无目录（如 obsidian）→ 不隐藏
+  const dir = text.slice(0, i + 1);            // '/test1/'
+  let best = '', bestLen = -1;
+  for (const q of state.paths) {
+    if (q.id === p.id) continue;
+    let qt = q.text;
+    if (!qt.endsWith('/')) qt += '/';
+    if (dir.startsWith(qt) && qt.length <= dir.length && qt.length > bestLen) { best = qt; bestLen = qt.length; }
+  }
+  return best;
+}
+/* 路径输入框的“静态显示值”（不含父前缀）：与 pathNodeHTML 显示一致，供失焦复位使用 */
 function pathDisplayValue(p) {
   if (!p) return '';
-  if (!p.text.endsWith('/')) {                 // 叶子：裸文件名
-    const cleaned = p.text.replace(/\/+$/, '');
-    return cleaned.split('/').pop() || p.text;
-  }
-  if (p.parent) {
-    let pf = fullPathOf(p.parent);
-    if (pf && !pf.endsWith('/')) pf += '/';
-    if (pf && p.text.startsWith(pf)) return p.text.slice(pf.length);
-  }
+  const pf = parentPrefixOf(p);
+  if (pf && p.text.startsWith(pf)) return p.text.slice(pf.length);
   return p.text;
 }
 /* 某记录关联的全部路径 id（多对多） */

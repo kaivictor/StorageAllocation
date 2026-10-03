@@ -6,9 +6,21 @@ function addSpace() {
   });
   render();
 }
+/* 生成不重复的路径文本：base 形如 "/新路径/"，若已存在则依次尝试 "/新路径1/"、"/新路径2/" …。
+   同时支持无尾斜杠的叶子（如 "obsidian"）。用于新增路径时保证“完整路径不重复”。 */
+function uniquePathText(base) {
+  const texts = new Set(state.paths.map(p => p.text));
+  if (!texts.has(base)) return base;
+  const hasSlash = base.endsWith('/');
+  const core = hasSlash ? base.slice(0, -1) : base;
+  let n = 1;
+  const cand = () => `${core}${n}${hasSlash ? '/' : ''}`;
+  while (texts.has(cand())) n++;
+  return cand();
+}
 function addData() {
   const pid = nid('p'), rid = nid('r'), prid = nid('pr');
-  const path = { id: pid, text: '/新路径/', app: false, parent: null };
+  const path = { id: pid, text: uniquePathText('/新路径/'), app: false, parent: null };
   const record = { id: rid, alias: '新数据', freq: '冷数据', size: { value: '', unit: 'GB' }, purpose: '', custom: {}, structure: { name: '根', children: [] } };
   state.paths.push(path);
   state.records.push(record);
@@ -49,7 +61,7 @@ function recordInsertIndex(y) {
 function addPathAt(y) {
   const id = nid('p');
   const idx = pathInsertIndex(y);
-  const path = { id, text: '/新路径/', app: false, parent: null };
+  const path = { id, text: uniquePathText('/新路径/'), app: false, parent: null };
   state.paths.splice(idx, 0, path);
   lastPathId = id;
   pendingFocus = pstr(['paths', id, 'text']);
