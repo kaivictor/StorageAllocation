@@ -244,7 +244,7 @@ function renderRight() {
   html += `<div class="lane lane-freq" data-resize="freq"><div class="lane-head align-center">频率</div><div class="attr-stack">${lane.freq}</div></div>`;
   html += inserterHTML('freq');
   for (const a of state.customAttrs.filter(x => x.after === 'freq')) { html += customLaneHTML(a); html += inserterHTML(a.id); }
-  html += `<div class="lane lane-size" data-resize="size"><div class="lane-head align-center">估计大小</div><div class="attr-stack">${lane.size}</div></div>`;
+  html += `<div class="lane lane-size" data-resize="size"><div class="lane-head align-right">估计大小</div><div class="attr-stack">${lane.size}</div></div>`;
   html += inserterHTML('size');
   for (const a of state.customAttrs.filter(x => x.after === 'size')) { html += customLaneHTML(a); html += inserterHTML(a.id); }
   html += `<div class="lane lane-purpose" data-resize="purpose"><div class="lane-head align-left">用途</div><div class="attr-stack">${lane.purpose}</div></div>`;

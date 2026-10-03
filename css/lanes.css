@@ -32,6 +32,8 @@
 .lane-freq .dd { justify-content: center; }                  /* 频率：水平居中 */
 .lane-freq .dd .dd-val { text-align: center; }
 .lane-purpose textarea.inline-edit { text-align: left; }    /* 用途：左对齐 */
+.lane-size .attr-node { text-align: right; }                  /* 估计大小：右对齐 */
+.lane-size .size-row { justify-content: flex-end; }           /* 数值+单位整体靠右（列被拉宽时仍右对齐） */
 /* 用途列：限宽 200px 并自动换行 */
 .lane-purpose .attr-node { width: 100%; }
 .lane-purpose textarea.inline-edit {
