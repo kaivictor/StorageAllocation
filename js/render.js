@@ -104,12 +104,20 @@ function syncLaneWidths() {
   });
 }
 
-/* 双击编辑：默认所有输入框只读/禁用（纯文本外观）；双击某个输入框仅让该元素可编辑。 */
+/* 编辑/只读模式：由全局 state.locked 决定。
+   锁定态（默认）：所有输入框只读/禁用（纯文本外观），需双击某个输入框才解锁编辑；
+   解锁态：所有输入框直接可编辑（单击即编辑），不存在“只读”概念。 */
 function lockInputs() {
   document.querySelectorAll('.inline-edit').forEach(el => {
-    if (el.tagName === 'SELECT') el.disabled = true;
-    else el.readOnly = true;
+    if (state.locked) {
+      if (el.tagName === 'SELECT') el.disabled = true;
+      else el.readOnly = true;
+    } else {
+      if (el.tagName === 'SELECT') el.disabled = false;
+      else el.readOnly = false;
+    }
   });
+  document.body.classList.toggle('unlocked', !state.locked);
 }
 
 /* 列宽配置 */
@@ -147,10 +155,10 @@ function renderLeft() {
         <div class="si-field"><span class="si-label">大小</span>
           <div class="si-combo">
             <input class="inline-edit si-pill" data-path='${pstr(['spaces', sp.id, 'info', 'size'])}' value="${esc(sp.info.size)}" placeholder="-" />
-            <input class="inline-edit si-unit" data-path='${pstr(['spaces', sp.id, 'info', 'unit'])}' value="${esc(sp.info.unit || '')}" placeholder="—" />
+            <div class="dd dd-unit" data-path='${pstr(['spaces', sp.id, 'info', 'unit'])}' data-options="MB|GB|TB" data-value="${esc(sp.info.unit || 'GB')}" tabindex="0"><span class="dd-val">${esc(sp.info.unit || 'GB')}</span></div>
             <span class="brk">(</span>
             <input class="inline-edit si-pill" data-path='${pstr(['spaces', sp.id, 'info', 'free'])}' value="${esc(sp.info.free)}" placeholder="-" />
-            <input class="inline-edit si-unit" data-path='${pstr(['spaces', sp.id, 'info', 'unit'])}' value="${esc(sp.info.unit || '')}" placeholder="—" />
+            <div class="dd dd-unit" data-path='${pstr(['spaces', sp.id, 'info', 'freeUnit'])}' data-options="MB|GB|TB" data-value="${esc(sp.info.freeUnit || 'GB')}" tabindex="0"><span class="dd-val">${esc(sp.info.freeUnit || 'GB')}</span></div>
             <span class="brk">)</span>
             <input class="inline-edit si-pill" data-path='${pstr(['spaces', sp.id, 'info', 'plan'])}' value="${esc(sp.info.plan)}" placeholder="-" />
           </div></div>
@@ -419,12 +427,13 @@ function cssAttr(s) {
 /* 单条路径节点 */
 function pathNodeHTML(pid, p) {
   const prefix = parentPrefixOf(p);
+  const locked = state.locked;
   const cls = `path-node${p.app ? ' is-app' : ''}${prefix ? ' is-sub' : ''}${!p.text.endsWith('/') ? ' is-leaf' : ''}`;
   const grip = `<span class="grip grip-inline" data-reorder="path" data-path-id="${pid}" title="长按拖动以调整排序">⠿</span>`;
-  /* 叶子路径（不以 '/' 结尾）：obsidian 样式，不带父路径前缀，仅显示裸文件名（basename）；
-     文件夹路径（以 '/' 结尾）：父级完整前缀由 path-prefix 呈现（仅当 parentPrefixOf 命中“其他路径”时折叠） */
+  /* 锁定态：叶子/文件夹均按“父前缀 + 相对名”显示（父前缀由 path-prefix 呈现，仅 hover 显示）；
+     解锁态：路径输入框始终直接显示完整路径，不再拆分出 path-prefix 前缀 span。 */
   const isLeaf = !p.text.endsWith('/');
-  const displayText = pathDisplayValue(p);
+  const displayText = locked ? pathDisplayValue(p) : p.text;
   /* 按父链深度计算缩进：第 n 级子文件夹缩进 n*16px，使第三级明显大于第二级 */
   let depth = 0, _cur = p;
   while (_cur && _cur.parent) { depth++; _cur = getPath(_cur.parent); }
@@ -438,7 +447,7 @@ function pathNodeHTML(pid, p) {
   return `<div class="${cls}"${indentStyle} data-path-id="${pid}" data-data-id="${pid}" title="${esc(pathTitle)}">
     <span class="path-anchor" data-path-id="${pid}" title="拖拽到空间建立连线"></span>
     ${grip}
-    ${prefix ? `<span class="path-prefix">${esc(prefix)}</span>` : ''}
+    ${locked && prefix ? `<span class="path-prefix">${esc(prefix)}</span>` : ''}
     <input class="inline-edit path-input" data-path='${pstr(['paths', pid, 'text'])}' value="${esc(displayText)}" />
     <span class="path-add-sib" data-action="add-record" data-path-id="${pid}" title="新增一条记录（数据别称/频率/估计大小/用途/结构），并与本路径建立关联">+</span>
   </div>`;

@@ -65,7 +65,7 @@
   padding: 3px 8px;
 }
 .alias-node .inline-edit {
-  border-color: transparent; background: transparent; padding: 1px 2px;
+  padding: 1px 2px;
   font-weight: 600;
 }
 .alias-node .inline-edit:focus { border-color: var(--brand); background: #fff; }

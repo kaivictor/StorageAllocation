@@ -25,6 +25,8 @@ let uid = 100;
 const nid = (p) => p + (++uid);
 
 const state = {
+  /* 锁定开关：true=锁定（双击编辑 / 单击复制）；false=解锁（单击即编辑 / 无复制）。持久化。 */
+  locked: true,
   /* 用户导入的自定义图标（base64 dataURL），置于图标选择菜单最前 */
   customIcons: [],
   /* 用户自定义属性列定义：{ id, name, after }；after ∈ {alias, freq, size}，表示插在该固定列之后 */

@@ -19,6 +19,7 @@
 .si-combo .brk { color: var(--ink-faint); }
 .si-combo input.si-pill { width: auto; min-width: 10px; field-sizing: content; text-align: center; padding: 1px 0; border-left: none; border-right: none; }
 .si-combo input.si-unit { width: auto; min-width: 10px; field-sizing: content; text-align: center; padding: 1px 0; border-left: none; border-right: none; }
+.si-combo .dd-unit { padding: 1px 0; }   /* 单位下拉与相邻 pill 垂直对齐 */
 .si-purpose { color: var(--ink-soft); }
 .si-remark { color: var(--ink-faint); font-size: 12px; font-style: italic; }
 .si-exclude { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ink-soft); cursor: pointer; }

@@ -62,13 +62,16 @@ function drawConnections() {
       emphasize(new Set([c.spaceId]), new Set([c.pathId]));
       g.classList.add('active', 'hover');
     });
-    g.addEventListener('dblclick', () => {
+    const openConn = () => {
       if (reorder || drag) return;
       cancelConnEditorHide();
       emphasize(new Set([c.spaceId]), new Set([c.pathId]));
       g.classList.add('active', 'hover', 'open');
       showConnEditor(c, vis);
-    });
+    };
+    /* 连线打开编辑器：锁定态双击、解锁态单击（与全局锁模式一致） */
+    g.addEventListener('click', () => { if (!state.locked) openConn(); });
+    g.addEventListener('dblclick', openConn);
     g.addEventListener('mouseleave', () => {
       if (reorder || drag) return;
       if (activeConnId === c.id) {

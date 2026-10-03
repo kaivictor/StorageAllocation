@@ -361,13 +361,35 @@ function initEvents() {
     if (t._timer) clearTimeout(t._timer);
     t._timer = setTimeout(() => t.classList.remove('show'), 1300);
   }
-  /* 单击复制（延迟 250ms 以避让双击；仅锁定态复制，编辑中不复制） */
+  /* 字段交互（区分锁定 / 解锁两态）：
+     - 锁定态：只读字段单击复制（延迟 250ms 避让双击；正在编辑的字段不复制），双击才编辑；
+     - 解锁态：单击即编辑——.inline-edit 已可直接编辑；.dd 单击直接弹下拉；空间图标单击直接弹图标菜单；无任何复制行为。 */
   document.addEventListener('click', (e) => {
-    const el = e.target.closest('.inline-edit, .dd');
+    /* 锁定态：单击 path-prefix（父前缀 span）也复制完整路径（前缀本身无 data-path，需从 .path-node 取 id） */
+    const prefixEl = e.target.closest('.path-prefix');
+    if (prefixEl && state.locked) {
+      const pn = prefixEl.closest('.path-node');
+      const pid = pn && pn.dataset.pathId;
+      if (pid) {
+        if (copyTimer) clearTimeout(copyTimer);
+        copyTimer = setTimeout(() => { copyTimer = null; copyText(getPath(pid).text || ''); }, 250);
+      }
+      return;
+    }
+    const el = e.target.closest('.inline-edit, .dd, .space-icon');
     if (!el) return;
-    if (!el.classList.contains('dd') && (el.tagName === 'SELECT' ? !el.disabled : !el.readOnly)) return;
-    if (copyTimer) clearTimeout(copyTimer);
-    copyTimer = setTimeout(() => { copyTimer = null; copyText(fieldCopyText(el)); }, 250);
+    if (state.locked) {
+      if (el.classList.contains('space-icon')) return;   // 锁定态：图标单击不复制，需双击才换图标
+      if (!el.classList.contains('dd') && (el.tagName === 'SELECT' ? !el.disabled : !el.readOnly)) return;
+      if (copyTimer) clearTimeout(copyTimer);
+      copyTimer = setTimeout(() => { copyTimer = null; copyText(fieldCopyText(el)); }, 250);
+    } else {
+      if (el.classList.contains('dd')) openDropdown(el);   // 解锁态：单击下拉即编辑，不复制
+      else if (el.classList.contains('space-icon')) {      // 解锁态：单击空间图标即换图标，不复制
+        const sn = el.closest('.space-node');
+        if (sn && sn.dataset.spaceId) openIconMenu(sn.dataset.spaceId, e.clientX, e.clientY);
+      }
+    }
   });
 
   /* 右栏按 X 坐标命中具体泳道后的新增路由：路径列→新增路径；数据别称/频率/估计大小/用途/
@@ -449,11 +471,11 @@ function initEvents() {
     if (to && to.closest && to.closest('.inline-edit') === el) return;
     if (el.tagName === 'SELECT') el.disabled = true; else el.readOnly = true;
     if (el.classList.contains('path-input')) {
-      /* 离开编辑态：即便用户未改动（change 不触发），也把输入框复位为“相对显示值”，
-         避免保留 enterPathEdit 写入的完整路径，导致悬停时前缀与其重复显示 */
+      /* 离开编辑态：锁定态复位为“相对显示值”（避免保留 enterPathEdit 写入的完整路径造成重复）；
+         解锁态始终显示完整路径，不做相对化复位 */
       const arr = el.dataset.path ? parr(el.dataset.path) : null;
       const p = arr && arr[0] === 'paths' ? getPath(arr[1]) : null;
-      if (p) el.value = pathDisplayValue(p);
+      if (p) el.value = state.locked ? pathDisplayValue(p) : p.text;
       const n = el.closest('.path-node'); if (n) n.classList.remove('editing');
     }
   });
@@ -469,6 +491,8 @@ function initEvents() {
         const p = getPath(arr[1]);
         if (p && pe.tagName === 'INPUT' && pe.readOnly === false) {
           if (pe.value !== p.text) { pe.value = p.text; if (pe.select) pe.select(); }
+          /* 解锁态编辑路径：与锁定态双击编辑一致，加 .editing 隐藏父级前缀，避免与完整路径重复显示 */
+          const n = pe.closest('.path-node'); if (n) n.classList.add('editing');
         }
       }
       else if (arr[0] === 'records') lastRecordId = arr[1];
@@ -493,6 +517,19 @@ function initEvents() {
     document.addEventListener('mousemove', move);
     document.addEventListener('mouseup', up);
   });
+
+  /* 锁定开关：切换后持久化并重新渲染以应用 lockInputs（锁定=双击编辑/单击复制；解锁=单击编辑/无复制） */
+  const lockChk = $('#btn-lock');
+  if (lockChk) {
+    lockChk.checked = !!state.locked;
+    const lockLabel = $('#lock-label');
+    lockChk.addEventListener('change', () => {
+      state.locked = lockChk.checked;
+      if (lockLabel) lockLabel.textContent = state.locked ? '锁定' : '解锁';
+      saveState();
+      render();   // 重新应用 lockInputs，使全部字段在 只读/可编辑 间切换
+    });
+  }
 
   /* 工具栏 */
   $('#btn-add-space').addEventListener('click', addSpace);

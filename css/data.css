@@ -72,8 +72,6 @@
   flex: 0 1 auto;
   min-width: 18px;
   width: auto;
-  border-color: transparent;
-  background: transparent;
   padding: 1px 2px;
   font: inherit;
 }
