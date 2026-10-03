@@ -1,8 +1,7 @@
 function render() {
   renderLeft();
   syncLeftColWidths();   // 左栏“空间信息/空间”两列按最宽内容共享列宽（仅水平，不改垂直/排序）
-  renderRight();
-  syncLaneWidths();      // 右侧 5 条泳道按 attr-node 内容最宽者设定列宽（绝对定位节点不参与自适应）
+  renderRight();        // 内部已先 fitPathColumn + syncLaneWidths 再 positionDataNodes
   alignHeights();
   /* 每次渲染都重排定位：保证路径均匀排布、记录节点与关联路径对齐。
      deferArrange 仅用于推迟“聚类重排”（父子靠拢 / 顺序调整），不影响定位——
@@ -60,23 +59,36 @@ function syncLeftColWidths() {
 /* 计算某泳道的自适应宽度（与 syncLaneWidths 的测量一致，但不写回），用于固定宽度判定 */
 function laneTargetWidth(lane) {
   const head = lane.querySelector('.lane-head');
-  const headW = head ? head.getBoundingClientRect().width : 0;
   const nodes = Array.from(lane.querySelectorAll('.attr-node'));
   const saved = nodes.map(n => ({
     el: n, position: n.style.position, transform: n.style.transform,
     top: n.style.top, left: n.style.left, right: n.style.right
   }));
+  const headSaved = head ? head.style.whiteSpace : '';
+  /* 用途列测量时把 textarea 临时钉成 200px，避免其按自身文本长度撑开（自适应）；
+     这样列宽稳定 = 200 + 徽标 + gap + padding，与“拖拽调列宽时 textarea 跟随列宽伸缩”互不冲突。 */
+  const purposeTA = lane.classList.contains('lane-purpose')
+    ? Array.from(lane.querySelectorAll('textarea.inline-edit')) : [];
+  purposeTA.forEach(t => { t.dataset._mw = t.style.width; t.style.width = '200px'; });
   nodes.forEach(n => { n.style.position = 'static'; n.style.transform = 'none'; n.style.top = 'auto'; n.style.left = 'auto'; n.style.right = 'auto'; });
   const oldW = lane.style.width, oldMin = lane.style.minWidth;
   lane.style.width = 'max-content'; lane.style.minWidth = '0';
+  if (head) head.style.whiteSpace = 'nowrap';   // 测“表头刚好不换行”的宽度
+  const headW = head ? head.getBoundingClientRect().width : 0;
   const contentW = lane.getBoundingClientRect().width;
   lane.style.width = oldW; lane.style.minWidth = oldMin;
+  if (head) head.style.whiteSpace = headSaved;
   saved.forEach(s => { s.el.style.position = s.position; s.el.style.transform = s.transform; s.el.style.top = s.top; s.el.style.left = s.left; s.el.style.right = s.right; });
-  /* 用途列固定 200px（inline-edit 与 lane-head 同宽），不随内容自适应撑宽；
-     用户拖拽列宽时由 state.laneWidths['purpose'] 优先接管（见 syncLaneWidths）。 */
-  if (lane.classList.contains('lane-purpose')) return 200;
-  const minW = lane.classList.contains('lane-purpose') ? 200 : 0;
-  return Math.max(headW, contentW, minW);
+  purposeTA.forEach(t => { t.style.width = t.dataset._mw || ''; delete t.dataset._mw; });
+  /* 最小列宽需把“列自身”的左右 padding/border 算进去（box-sizing:border-box 下列宽含 padding，
+     不加上会导致内容区比表头窄 12px 而换行）：
+     用途列 140px；其余列 = 表头文字宽 + 列左右 padding + 列左右 border（margin 是列间间距，不计入列宽）。 */
+  const cs = getComputedStyle(lane);
+  const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+  const borderX = parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+  const headMin = Math.ceil(headW + padX + borderX);
+  const minW = lane.classList.contains('lane-purpose') ? 140 : headMin;
+  return Math.max(contentW, minW);
 }
 function syncLaneWidths() {
   const lanes = document.querySelectorAll('.right-canvas > .lane:not(.lane-path)');
@@ -241,8 +253,9 @@ function renderRight() {
 
   html += `</div>`;
   body.innerHTML = html;
-  fitPathColumn();        // 先定稿路径列宽（含 hover 预留），再定位浮动节点
-  positionDataNodes();
+  fitPathColumn();        // 先定稿路径列宽（含 hover 预留）
+  syncLaneWidths();       // 再定稿数据列宽——用途 textarea 宽度最终化后，field-sizing:content 才能使高度与最终渲染一致
+  positionDataNodes();     // 此时测量的单元格高度才是最终值（不再被“宽度未定→窄列→文字多行→虚高”污染）
 }
 
 /* 路径列自适应：列宽 = max( min(普通), min(hovered) ) */
@@ -275,34 +288,15 @@ function fitPathColumn() {
 }
 
 /* 浮动节点定位：
-   - 路径在竖向带内垂直均匀布局（带高取 Max(空间最小高度, 数据自然高度)），路径节点均匀分布；
-   - 记录节点（5 列）置于其“关联路径中心均值”处，并做重叠规避；无关联路径的记录按序均布。 */
+   - 带高 = max(min(数据记录), min(路径), min(空间))；
+   - 路径节点在带内 space-evenly 分布；空间行均匀分布；
+   - 记录节点以“关联路径中心均值 / 按序均布”定位，相邻块按上下界留最小间距 PAD(12px) 规避，不强制均匀分布。 */
 function positionDataNodes() {
   const canvas = $('#right-canvas');
   if (!canvas) return;
   const pathStack = canvas.querySelector('.lane-path .path-stack');
 
-  const spaceRows = document.querySelector('#left-rows');
-  const spaceH = spaceRows ? spaceRows.getBoundingClientRect().height : 0;
-  const dataH = pathStack.getBoundingClientRect().height;
-  const bandH = Math.max(spaceH, dataH);
-  pathStack.style.height = bandH + 'px';
-  pathStack.style.justifyContent = 'space-evenly';
-
-  /* 记录节点是绝对定位，其偏移父级是 .attr-stack（位于 lane-head 之下）；
-     路径节点在 .path-stack（同处 lane-head 之下），二者顶部对齐。
-     故所有 y 均相对 path-stack 顶部计算，记录节点才能精确对齐到关联路径中心。 */
-  const stackRect = pathStack.getBoundingClientRect();
-  const canvasRect = canvas.getBoundingClientRect();
-  const pathY = {};
-  canvas.querySelectorAll('.path-node').forEach(n => {
-    const r = n.getBoundingClientRect();
-    pathY[n.dataset.pathId] = r.top + r.height / 2 - stackRect.top;
-  });
-
-  /* 记录目标高度 = 关联路径中心均值；无关联路径则按序均布于带内；再做重叠规避。
-     重叠规避按“每条记录 5 个字段节点的最大高度（半高）”来留间距，
-     而非固定 MIN_GAP——否则“结构”等多级子树节点会被压到下一条记录上。 */
+  const PAD = 12;   // 块间与首尾的最小相等间距（px），按上下界计
   const halfOf = (rid) => {
     let max = 0;
     canvas.querySelectorAll(`.attr-node[data-record-id="${cssAttr(rid)}"]`).forEach(n => {
@@ -311,19 +305,52 @@ function positionDataNodes() {
     });
     return max / 2;
   };
+
+  /* 高度取 max(min(数据记录), min(路径), min(空间))：
+     - min(空间)    = 左栏空间行总高
+     - min(路径)    = path-stack 内容自然高（路径节点仅由 path-stack 撑开）
+     - min(数据记录) = 各记录以最小间距紧密排布所需高度（半高+半高+间距 累加）
+     三者内部以相等间距均匀排布：路径用 space-evenly；记录在此带高内排布。 */
+  const spaceRows = document.querySelector('#left-rows');
+  const spaceH = spaceRows ? spaceRows.getBoundingClientRect().height : 0;
+  const pathH = pathStack.getBoundingClientRect().height;
+  const recHalves = state.records.map(r => halfOf(r.id));
+  let recMinH = 0;
+  if (recHalves.length) {
+    // 各记录以最小间距 PAD 紧排所需高度下限 = Σ单条高度 + (N-1) 个块间最小间距 PAD
+    //                                   = Σ(2*half) + (N-1)*PAD  （仅保证能兜住，不强制均匀分布）
+    recMinH = recHalves.reduce((s, h) => s + 2 * h, 0) + (recHalves.length - 1) * PAD;
+  }
+  const bandH = Math.max(recMinH, pathH, spaceH);
+  pathStack.style.height = bandH + 'px';
+  pathStack.style.justifyContent = 'space-evenly';
+
+  /* 记录节点是绝对定位，其偏移父级是 .attr-stack（位于 lane-head 之下）；
+     路径节点在 .path-stack（同处 lane-head 之下），二者顶部对齐。
+     故所有 y 均相对 path-stack 顶部计算。 */
+  const stackRect = pathStack.getBoundingClientRect();
+  const canvasRect = canvas.getBoundingClientRect();
+  const pathY = {};
+  canvas.querySelectorAll('.path-node').forEach(n => {
+    const r = n.getBoundingClientRect();
+    pathY[n.dataset.pathId] = r.top + r.height / 2 - stackRect.top;
+  });
+
+  /* 记录节点：以“关联路径中心均值 / 按序均布”定位；仅做最小间距规避——
+     相邻块按上下界（上条底↔本条顶）留 ≥PAD(12px) 间隙，不强制均匀分布。 */
+  const n = recHalves.length;
   const items = state.records.map((r, i) => {
     const ys = recordPathIds(r.id).map(pid => pathY[pid]).filter(v => v != null);
     const y = ys.length
       ? ys.reduce((a, b) => a + b, 0) / ys.length
-      : bandH * (i + 0.5) / Math.max(1, state.records.length);
+      : bandH * (i + 0.5) / Math.max(1, n);
     return { rid: r.id, y, half: halfOf(r.id) };
   });
   items.sort((a, b) => a.y - b.y);
-  const PAD = 12;
   for (let iter = 0; iter < 240; iter++) {
     let moved = false;
     for (let i = 1; i < items.length; i++) {
-      const need = items[i - 1].half + items[i].half + PAD;   // 上条半高 + 本条半高 + 间距
+      const need = items[i - 1].half + items[i].half + PAD;   // 上条半高 + 本条半高 + 最小间距
       const gap = items[i].y - items[i - 1].y;
       if (gap < need) {
         const shift = (need - gap) / 2;

@@ -1,33 +1,5 @@
 function initEvents() {
-  /* 输入框 / 下拉：change 即写回 state 并重绘 */
-  function commitChange(arr, value) {
-    const key = arr[arr.length - 1];
-    /* 子路径提交：
-       子文件夹编辑“完整路径”（以 '/' 开头）时直接采用，由 autoParent 按前缀重新识别父级；
-       仅当输入为相对片段（不以 '/' 开头，如叶子文件名）时才补回父级完整前缀 */
-    if (key === 'text' && arr[0] === 'paths') {
-      const p = getPath(arr[1]);
-      if (p && p.parent && typeof value === 'string' && !value.startsWith('/')) {
-        let pf = fullPathOf(p.parent);
-        if (pf && !pf.endsWith('/')) pf += '/';
-        if (!value.startsWith(pf)) value = pf + value;
-      }
-      /* 重命名不允许与已有路径（除自身）完全相同：完整路径唯一 */
-      if (p) {
-        const v = typeof value === 'string' ? value.trim() : value;
-        if (state.paths.some(q => q.id !== p.id && q.text === v)) {
-          showToast('路径已存在，不能重复');
-          render();                 // 重建输入框为原 state 值，避免显示成重复内容
-          return;                   // 不写回 state、不重排、不重算父子
-        }
-        value = v;
-      }
-    }
-    if (arr[0] === 'records' && arr[2] === 'custom') { const rec = getRecord(arr[1]); if (rec) rec.custom = rec.custom || {}; }
-    setByPath(arr, value);
-    if (key === 'text' && arr[0] === 'paths') autoParent(arr[1]); // 路径文本变化：按前缀自动识别父子
-    render();
-  }
+  /* 输入框 / 下拉：change 即写回 state 并重绘（commitChange 已提升为全局函数，供 openDropdown 等复用） */
   document.addEventListener('change', (e) => {
     const t = e.target;
     if (t.dataset && t.dataset.cap) {
@@ -140,8 +112,18 @@ function initEvents() {
     state.laneWidths = state.laneWidths || {};
     const startX = e.clientX;
     const startW = lane.getBoundingClientRect().width;
-    const auto = laneTargetWidth(lane);   // 该列“设计/自适应”宽度（用途≈200px），作为吸附目标
-    const SNAP = 20, MIN_W = 50;          // 吸附死区 ±20px；最小列宽 50px
+    const auto = laneTargetWidth(lane);   // 该列“设计/自适应”宽度，作为吸附目标
+    const headEl = lane.querySelector('.lane-head');
+    const headSaved = headEl ? headEl.style.whiteSpace : '';
+    if (headEl) headEl.style.whiteSpace = 'nowrap';   // 测“表头刚好不换行”的宽度
+    const headW = headEl ? headEl.getBoundingClientRect().width : 50;
+    if (headEl) headEl.style.whiteSpace = headSaved;
+    const cs = getComputedStyle(lane);
+    const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+    const borderX = parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+    const SNAP = 20;
+    /* 最小列宽：用途列 140px；其余列 = 表头文字宽 + 列左右 padding + 列左右 border（margin 为列间间距，不计入） */
+    const MIN_W = lane.classList.contains('lane-purpose') ? 140 : Math.ceil(headW + padX + borderX);
     let curW = startW;
     handle.classList.add('dragging');
     const onMove = (ev) => {
@@ -179,9 +161,9 @@ function initEvents() {
     const conn = e.target.closest('.conn');
     const fanGroup = e.target.closest('.fan-group');
     const pathNode = e.target.closest('.path-node');
-    const recNode = e.target.closest('.lane-alias .attr-node, .lane-freq .attr-node, .lane-size .attr-node, .lane-purpose .attr-node');
+    const recNode = e.target.closest('.lane-alias .attr-node, .lane-freq .attr-node, .lane-size .attr-node, .lane-purpose .attr-node, .lane-custom .attr-node');
     const structNode = e.target.closest('.struct-node');
-    const customLane = e.target.closest('.lane-custom');
+    const customLane = e.target.closest('.lane-custom .lane-head');   /* 对齐菜单仅限自定义列表头；属性值走上面 recNode 弹“删除记录” */
     if (spaceNode) {
       e.preventDefault();
       openCtxMenu(e.clientX, e.clientY, [
@@ -227,7 +209,7 @@ function initEvents() {
       }
       items.push({ label: '删除节点', danger: true, confirm: true, onClick: () => { delNode(arr); render(); } });
       openCtxMenu(e.clientX, e.clientY, items);
-    } else if (customLane) {
+    } else if (customLane) {   /* 仅命中自定义列表头（见上方选择器限定） */
       e.preventDefault();
       const cid = customLane.dataset.customId;
       const a = state.customAttrs.find(x => x.id === cid);
@@ -792,6 +774,36 @@ function importIcon(file) {
     reader.onerror = () => resolve(null);
     reader.readAsDataURL(file);
   });
+}
+
+/* 输入框 / 下拉：change 即写回 state 并重绘（全局函数，供 initEvents 内事件处理器与 openDropdown 复用） */
+function commitChange(arr, value) {
+  const key = arr[arr.length - 1];
+  /* 子路径提交：
+     子文件夹编辑“完整路径”（以 '/' 开头）时直接采用，由 autoParent 按前缀重新识别父级；
+     仅当输入为相对片段（不以 '/' 开头，如叶子文件名）时才补回父级完整前缀 */
+  if (key === 'text' && arr[0] === 'paths') {
+    const p = getPath(arr[1]);
+    if (p && p.parent && typeof value === 'string' && !value.startsWith('/')) {
+      let pf = fullPathOf(p.parent);
+      if (pf && !pf.endsWith('/')) pf += '/';
+      if (!value.startsWith(pf)) value = pf + value;
+    }
+    /* 重命名不允许与已有路径（除自身）完全相同：完整路径唯一 */
+    if (p) {
+      const v = typeof value === 'string' ? value.trim() : value;
+      if (state.paths.some(q => q.id !== p.id && q.text === v)) {
+        showToast('路径已存在，不能重复');
+        render();                 // 重建输入框为原 state 值，避免显示成重复内容
+        return;                   // 不写回 state、不重排、不重算父子
+      }
+      value = v;
+    }
+  }
+  if (arr[0] === 'records' && arr[2] === 'custom') { const rec = getRecord(arr[1]); if (rec) rec.custom = rec.custom || {}; }
+  setByPath(arr, value);
+  if (key === 'text' && arr[0] === 'paths') autoParent(arr[1]); // 路径文本变化：按前缀自动识别父子
+  render();
 }
 
 /* 自绘下拉：双击 .dd 直接弹出菜单 */

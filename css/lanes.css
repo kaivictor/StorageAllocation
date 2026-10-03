@@ -11,7 +11,7 @@
 .lane-alias { flex: 0 0 auto; width: max-content; margin-left: 56px; } /* 路径与数据别称之间留一列空白 */
 .lane-freq { flex: 0 0 auto; width: max-content; }
 .lane-size { flex: 0 0 auto; width: max-content; }
-.lane-purpose { flex: 0 0 auto; width: 200px; }
+.lane-purpose { flex: 0 0 auto; width: max-content; }   /* 列宽贴合内容：textarea(200) + 两个徽标 + gap + 列内 padding，不写死 200 以免裁掉徽标 */
 .lane-structure { flex: 0 0 auto; width: max-content; }
 /* 各列水平对齐（仅水平方向，不改动垂直布局） */
 .subcol-info { justify-content: flex-end; }                  /* 空间信息：右对齐 */
@@ -35,8 +35,8 @@
 /* 用途列：限宽 200px 并自动换行 */
 .lane-purpose .attr-node { width: 100%; }
 .lane-purpose textarea.inline-edit {
-  width: 100%; max-width: none; min-height: 1.8em; resize: none;
-  flex: 1 1 auto; min-width: 0; box-sizing: border-box;
+  flex: 1 1 200px; width: auto; min-width: 0; max-width: none;   /* 填满列（默认基宽 200px），拖拽调列宽时跟随伸缩 */
+  min-height: 1.8em; resize: none; box-sizing: border-box; field-sizing: content;  /* 高度随内容自动增长（不再钉死成默认 ~2 行）；宽度由 flex 基宽 200px 控制，不横向自适应 */
   white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word;
   line-height: 1.4;
 }
