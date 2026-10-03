@@ -72,7 +72,9 @@ function laneTargetWidth(lane) {
   const contentW = lane.getBoundingClientRect().width;
   lane.style.width = oldW; lane.style.minWidth = oldMin;
   saved.forEach(s => { s.el.style.position = s.position; s.el.style.transform = s.transform; s.el.style.top = s.top; s.el.style.left = s.left; s.el.style.right = s.right; });
-  /* 用途列要求固定 200px（inline-edit 与 lane-head 同宽），故该列宽至少 200px，不被内容宽度压窄 */
+  /* 用途列固定 200px（inline-edit 与 lane-head 同宽），不随内容自适应撑宽；
+     用户拖拽列宽时由 state.laneWidths['purpose'] 优先接管（见 syncLaneWidths）。 */
+  if (lane.classList.contains('lane-purpose')) return 200;
   const minW = lane.classList.contains('lane-purpose') ? 200 : 0;
   return Math.max(headW, contentW, minW);
 }
