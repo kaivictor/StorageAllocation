@@ -34,11 +34,11 @@ const state = {
   /* 固定列宽：键为列标识（alias/freq/size 及自定义属性 id），值为像素；未设置则该列走自适应宽度 */
   laneWidths: {},
   spaces: [
-    { id: 's1', info: { account: 'ACC123456', size: '512', free: '128', plan: 'Pro', unit: 'G', purpose: '工作资料', remark: '主力固态盘' },
+    { id: 's1', info: { account: 'ACC123456', size: '512', free: '128', plan: 'Pro', unit: 'GB', purpose: '工作资料', remark: '主力固态盘' },
       media: { name: 'SSD 主盘', icon: 'disk0' } },
-    { id: 's2', info: { account: 'SN9876543210', size: '2048', free: '640', plan: '企业版', unit: 'G', purpose: '冷备份', remark: '归档机械盘' },
+    { id: 's2', info: { account: 'SN9876543210', size: '2048', free: '640', plan: '企业版', unit: 'GB', purpose: '冷备份', remark: '归档机械盘' },
       media: { name: 'HDD 备份', icon: 'disk1' } },
-    { id: 's3', info: { account: 'webdav_user', size: '-', free: '-', plan: 'WebDAV', unit: 'G', purpose: '同步盘', remark: '不计空间' },
+    { id: 's3', info: { account: 'webdav_user', size: '-', free: '-', plan: 'WebDAV', unit: 'GB', purpose: '同步盘', remark: '不计空间' },
       media: { name: '网盘同步', icon: 'disk1' } }
   ],
   /* 路径：扁平列表，每条路径独立。parent 指向另一条路径（子文件夹），形成层级 */

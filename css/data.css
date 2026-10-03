@@ -238,7 +238,6 @@ textarea.inline-edit {
   cursor: default;
   -webkit-appearance: none;
   appearance: none;
-  padding-right: 2px;
 }
 .inline-edit[readonly]:focus, .inline-edit:disabled:focus { outline: none; box-shadow: none; }
 .inline-edit:disabled { color: var(--ink); opacity: 1; }

@@ -178,7 +178,7 @@ function renderLeft() {
         <div class="space-icon">${iconHTML}</div>
         <div class="space-meta">
           <input class="inline-edit space-name" data-path='${pstr(['spaces', sp.id, 'media', 'name'])}' value="${esc(sp.media.name)}" placeholder="—" />
-          <div class="space-id" title="识别号（账号/序列号前4位）">${esc(id4)}</div>
+          <div class="space-id" title="识别号（账号/序列号前4位）">（${esc(id4)}）</div>
         </div>
         <span class="grip" data-reorder="space" data-space-id="${sp.id}" title="长按拖动以调整排序">⠿</span>
         <div class="space-anchor" data-space-id="${sp.id}" title="拖拽到数据建立连线"></div>
