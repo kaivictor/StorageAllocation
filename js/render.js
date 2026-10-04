@@ -1,6 +1,5 @@
 function render() {
   renderLeft();
-  syncLeftColWidths();   // 左栏“空间信息/空间”两列按最宽内容共享列宽（仅水平，不改垂直/排序）
   renderRight();        // 内部已先 fitPathColumn + syncLaneWidths 再 positionDataNodes
   alignHeights();
   /* 每次渲染都重排定位：保证路径均匀排布、记录节点与关联路径对齐。
@@ -25,32 +24,6 @@ function render() {
     }
   }
   saveState();   // 每次渲染后持久化（含排序：数组顺序即显示与排序顺序）
-}
-
-/* 左栏两列共享列宽：把“空间信息”“空间”各自按所有行最宽内容对齐，
-   使右对齐 / 铺满在跨行时真正生效；列宽 = 该列最宽内容（“恰好能放得下当前内容”）。
-   仅水平方向，不改动任何垂直布局，也不影响拖拽排序。 */
-function syncLeftColWidths() {
-  const rows = Array.from(document.querySelectorAll('#left-rows .row[data-space-row]'));
-  if (!rows.length) return;
-  const infoCells = [], spaceCells = [];
-  rows.forEach(r => {
-    const info = r.querySelector(':scope > .cell.subcol-info');
-    const space = r.querySelector(':scope > .cell.subcol-space');
-    if (info) infoCells.push(info);
-    if (space) spaceCells.push(space);
-  });
-  infoCells.forEach(c => c.style.width = '');
-  spaceCells.forEach(c => c.style.width = '');
-  let wInfo = 0, wSpace = 0;
-  infoCells.forEach(c => { wInfo = Math.max(wInfo, c.getBoundingClientRect().width); });
-  spaceCells.forEach(c => { wSpace = Math.max(wSpace, c.getBoundingClientRect().width); });
-  infoCells.forEach(c => { c.style.width = Math.ceil(wInfo) + 'px'; });
-  spaceCells.forEach(c => { c.style.width = Math.ceil(wSpace) + 'px'; });
-  const hInfo = document.querySelector('#left-body .col-head-cell.subcol-info');
-  const hSpace = document.querySelector('#left-body .col-head-cell.subcol-space');
-  if (hInfo) hInfo.style.width = Math.ceil(wInfo) + 'px';
-  if (hSpace) hSpace.style.width = Math.ceil(wSpace) + 'px';
 }
 
 /* 右侧 5 条泳道自适应宽度：.attr-node 是绝对定位，默认不会撑开列宽，
@@ -122,7 +95,6 @@ function lockInputs() {
 
 /* 列宽配置 */
 const LEFT_COLS = [
-  { label: '空间信息', cls: 'subcol-info', align: 'right' },
   { label: '空间', cls: 'subcol-space', align: 'center' }
 ];
 const RIGHT_COLS = [
@@ -148,8 +120,7 @@ function renderLeft() {
   for (const sp of state.spaces) {
     const id4 = (sp.info.account || '').slice(0, 4) || '----';
     html += `<div class="row${sp.disabled ? ' is-disabled' : ''}" data-space-row="${sp.id}">`;
-    html += `<div class="cell subcol-info">
-      <div class="space-info">
+    html += `<div class="space-info">
         <div class="si-col si-col-left">
           <div class="si-field"><span class="si-label">用途</span>
             <input class="inline-edit" data-path='${pstr(['spaces', sp.id, 'info', 'purpose'])}' value="${esc(sp.info.purpose)}" placeholder="—" /></div>
@@ -170,23 +141,22 @@ function renderLeft() {
               <input class="inline-edit si-pill" data-path='${pstr(['spaces', sp.id, 'info', 'plan'])}' value="${esc(sp.info.plan)}" placeholder="-" />
             </div></div>
         </div>
-      </div></div>`;
+      </div>`;
     const iconHTML = sp.media.icon && DEFAULT_ICONS[sp.media.icon]
       ? DEFAULT_ICONS[sp.media.icon]
       : (sp.media.icon && sp.media.icon.startsWith('data:') ? `<img src="${sp.media.icon}" alt="">` : DEFAULT_ICONS.disk0);
     /* 相连路径按完整路径文本排序，使父子文件夹在 title 中聚在一起 */
     const linkedPaths = state.connections.filter(c => c.spaceId === sp.id).map(c => getPath(c.pathId)).filter(Boolean).sort((a, b) => a.text < b.text ? -1 : a.text > b.text ? 1 : 0);
     const spaceTitle = linkedPaths.length ? linkedPaths.map(p => p.text).join('\n') : '（未关联路径）';
-    html += `<div class="cell subcol-space">
-      <div class="space-node" data-space-id="${sp.id}" title="${esc(spaceTitle)}">
-        <div class="space-icon">${iconHTML}</div>
+    html += `<div class="space-node" data-space-id="${sp.id}" title="${esc(spaceTitle)}">
         <div class="space-meta">
           <input class="inline-edit space-name" data-path='${pstr(['spaces', sp.id, 'media', 'name'])}' value="${esc(sp.media.name)}" placeholder="—" />
           <div class="space-id" title="识别号（账号/序列号前4位）">（${esc(id4)}）</div>
         </div>
+        <div class="space-icon">${iconHTML}</div>
         <span class="grip" data-reorder="space" data-space-id="${sp.id}" title="长按拖动以调整排序">⠿</span>
         <div class="space-anchor" data-space-id="${sp.id}" title="拖拽到数据建立连线"></div>
-      </div></div>`;
+      </div>`;
     html += `</div>`;
   }
   html += `</div>`;
@@ -235,7 +205,7 @@ function renderRight() {
         <input class="inline-edit" data-path='${pstr(['records', rid, 'alias'])}' value="${esc(r.alias)}" placeholder="—" />
       </div>`;
     lane.freq += `<div class="attr-node" data-record-id="${rid}">
-        <div class="dd" data-path='${pstr(['records', rid, 'freq'])}' data-options="冷数据|热数据|常读不常写|常写不常读|只读|只写" data-value="${esc(r.freq)}">
+        <div class="dd" data-path='${pstr(['records', rid, 'freq'])}' data-options="冷数据|热数据|常读不常写|常写不常读|只读|只写" data-value="${esc(r.freq)}" data-freq="${esc(r.freq)}">
           <span class="dd-val">${esc(r.freq)}</span></div></div>`;
     lane.size += `<div class="attr-node" data-record-id="${rid}">
         <div class="size-row">

@@ -34,6 +34,7 @@
   /* color: var(--ink-faint); */
   color: black;
   white-space: nowrap;
+  width: 100%;
 }
 /* 列头/泳道头对齐方式 */
 .align-right  { text-align: right;  justify-content: flex-end; }
@@ -49,10 +50,7 @@
   padding: 14px 12px;
 }
 
-.subcol-info { display: flex; justify-content: flex-end; align-items: center; }
-.subcol-space { flex: 0 0 auto; width: max-content; }
-/* 空间节点在等高的行内垂直居中，使其与“空间信息”块居中对齐 */
-.cell.subcol-space { display: flex; align-items: center; }
+/* 合并后的“空间”列：行即单列；内部“空间信息 + 空间节点”保持并排布局，右对齐、宽度自适应（不设固定宽度） */
 .subcol-path { flex: 0 0 auto; width: max-content; }
 .subcol-alias { flex: 0 0 auto; width: max-content; }
 .subcol-freq { flex: 0 0 auto; width: max-content; }
@@ -64,4 +62,19 @@
 .row > .cell { flex: 0 0 auto; }
 .row > .cell:last-child { border-right: none; }
 .cell.subcol-structure { flex: 0 0 auto; }
+/* 空间行作为卡片：背景 / 阴影 / 边框移到 row，而非 space-node；
+   行即单列，内部“空间信息 + 空间节点”并排、右对齐、宽度自适应（不设固定宽度） */
+.row[data-space-row] {
+  background: var(--panel-bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  width: max-content;
+  align-self: flex-end;
+}
 

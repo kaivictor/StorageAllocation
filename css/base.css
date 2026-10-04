@@ -103,8 +103,8 @@ html.dark .path-node:hover { background: #262b36; }
 html.dark .path-node .path-input:focus,
 html.dark .path-node.is-leaf .path-input:focus { background: #2a2f3a; border-color: var(--brand); }
 html.dark .alias-node .inline-edit:focus { background: #2a2f3a; }
-html.dark .space-node { background: #20242d; }
-html.dark .space-node:hover { background: #20242d; }
+html.dark .row[data-space-row] { background: #20242d; border-color: var(--line-strong); }
+html.dark .space-info { background: #232833; border-color: var(--line-strong); }
 html.dark .space-icon { background: #2a2f3a; }
 
 /* 数据单元格 / 增删小按钮 */

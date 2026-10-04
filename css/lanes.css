@@ -14,8 +14,6 @@
 .lane-purpose { flex: 0 0 auto; width: max-content; }   /* 列宽贴合内容：textarea(200) + 两个徽标 + gap + 列内 padding，不写死 200 以免裁掉徽标 */
 .lane-structure { flex: 0 0 auto; width: max-content; }
 /* 各列水平对齐（仅水平方向，不改动垂直布局） */
-.subcol-info { justify-content: flex-end; }                  /* 空间信息：右对齐 */
-.space-node { width: 100%; }                                 /* 空间：铺满列 */
 .lane-path .path-node { width: 100%; }                       /* 路径：铺满列（含 hover 后宽度） */
 .lane-alias .attr-node { text-align: left; }                 /* 数据别称：左对齐 */
 /* 每条记录“数据别称/频率/估计大小/用途”四个单元格的整体外框（由 JS 在定位后绘制）：白底 + 阴影，无边框 */
@@ -31,6 +29,9 @@
 .rec-frame.faded { background: transparent; box-shadow: none; }
 .lane-freq .dd { justify-content: center; }                  /* 频率：水平居中 */
 .lane-freq .dd .dd-val { text-align: center; }
+/* 频率按值着色：冷数据=冰蓝，热数据=暖橙 */
+.lane-freq .dd[data-freq="冷数据"] .dd-val { color: #1ba6d4; }
+.lane-freq .dd[data-freq="热数据"] .dd-val { color: #ef7d2e; }
 .lane-purpose textarea.inline-edit { text-align: left; }    /* 用途：左对齐 */
 .lane-size .attr-node { text-align: right; }                  /* 估计大小：右对齐 */
 .lane-size .size-row { justify-content: flex-end; }           /* 数值+单位整体靠右（列被拉宽时仍右对齐） */

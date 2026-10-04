@@ -11,12 +11,13 @@
   gap: 12px;
   padding: 0 10px;
   font-size: 10px;   /* 整体字号减小 2 号（原约 12px） */
-  border: 1px solid transparent;
+  border: 1px solid var(--line);
+  background: #f4f6fa;
   border-radius: 10px;
   transition: .15s;
 }
 .si-col { display: flex; flex-direction: column; gap: 1px; align-items: flex-end; }   /* 空间信息两列布局 */
-.space-info:hover { background: transparent; border-color: transparent; }
+.space-info:hover { background: #eef1f6; }
 .si-account { font-weight: 600; color: var(--ink); }
 .si-field { display: flex; align-items: center; gap: 4px; }
 .si-field .inline-edit { flex: 0 1 auto; min-width: 10px; max-width: 200px; width: auto; field-sizing: content; padding: 0; }
@@ -31,22 +32,20 @@
 .si-exclude { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--ink-soft); cursor: pointer; }
 .si-exclude input { width: 14px; height: 14px; }
 /* ---------- 空间节点 ---------- */
+/* 背景 / 阴影 / 边框已移至 .row[data-space-row]（整行卡片）；此处仅保留布局与交互 */
 .space-node {
-  width: 100%;
   display: flex;
   align-items: center;
-  padding: 6px;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  padding: 2px 4px;
   position: relative;
   transition: .15s;
   cursor: pointer;
 }
-.space-node:hover { background: #fff; }
 .space-icon {
   width: 30px; height: 30px;
   flex: 0 0 30px;
+  margin-left: 2px;
+  margin-right: 6px;
   border-radius: 8px;
   background: #eef6f1;
   display: flex; align-items: center; justify-content: center;
@@ -57,11 +56,11 @@
 .space-icon svg { width: 20px; height: 20px; }
 .space-icon img { width: 100%; height: 100%; object-fit: cover; }
 .space-meta { display: flex; flex-direction: row; align-items: center; gap: 0; min-width: 0; }
-.space-name { font-weight: 600; flex: 0 1 auto; min-width: 0; margin-left: 8px;}
+.space-name { font-weight: 600; flex: 0 1 auto; min-width: 0; }
 .space-id { flex: 0 0 auto; font-size: 11px; padding: 0 1px; color: var(--ink-faint); font-family: ui-monospace, monospace; }
 .space-anchor {
   position: absolute;
-  right: -7px; top: 50%;
+  right: -12px; top: 50%;
   transform: translateY(-50%);
   width: 12px; height: 12px;
   border-radius: 50%;

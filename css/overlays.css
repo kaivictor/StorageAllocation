@@ -1,7 +1,6 @@
 /* ---------- 强调 / 弱化 ---------- */
 .row.faded { opacity: .25; filter: saturate(.4); }
 .row.active { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 10px; }
-.space-node.active { border-color: var(--brand); }
 .data-cell.active { border-color: var(--brand); }
 
 /* ---------- 图标选择浮层 ---------- */
