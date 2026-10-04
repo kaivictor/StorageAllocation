@@ -1,6 +1,7 @@
 function addSpace() {
   state.spaces.push({
     id: nid('s'),
+    disabled: false,
     info: { account: '', size: '', free: '', plan: '', unit: '', freeUnit: '', purpose: '', remark: '' },
     media: { name: '新空间', icon: 'disk0' }
   });
@@ -91,7 +92,7 @@ function addDataAt(which, y) {
 /* 双击“空间/空间信息”列空白：新增空间并聚焦名称，插入到点击处 */
 function addSpaceAt(y) {
   const id = nid('s');
-  const sp = { id, info: { account: '', size: '', free: '', plan: '', unit: '', freeUnit: '', purpose: '', remark: '' }, media: { name: '新空间', icon: 'disk0' } };
+  const sp = { id, disabled: false, info: { account: '', size: '', free: '', plan: '', unit: '', freeUnit: '', purpose: '', remark: '' }, media: { name: '新空间', icon: 'disk0' } };
   state.spaces.splice(spaceInsertIndex(y), 0, sp);
   pendingFocus = pstr(['spaces', id, 'media', 'name']);
   deferArrange = true;

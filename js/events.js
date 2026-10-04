@@ -166,8 +166,12 @@ function initEvents() {
     const customLane = e.target.closest('.lane-custom .lane-head');   /* 对齐菜单仅限自定义列表头；属性值走上面 recNode 弹“删除记录” */
     if (spaceNode) {
       e.preventDefault();
+      const sid = spaceNode.dataset.spaceId;
+      const sp = state.spaces.find(s => s.id === sid);
+      const isDisabled = !!(sp && sp.disabled);
       openCtxMenu(e.clientX, e.clientY, [
-        { label: '删除空间', danger: true, confirm: true, onClick: () => deleteSpace(spaceNode.dataset.spaceId) }
+        { label: isDisabled ? '启用' : '停用', onClick: () => { const s = state.spaces.find(x => x.id === sid); if (s) { s.disabled = !s.disabled; render(); } } },
+        { label: '删除空间', danger: true, confirm: true, onClick: () => deleteSpace(sid) }
       ]);
     } else if (conn) {
       e.preventDefault();

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新的[空间]布局示意（未启用）</title>
+    <style>
+        div {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <!-- 本文档只示意各个元素的相对位置，不含实际内容、样式、绝对位置 -->
+    <div class="space-box" style="width: fit-content; height: 36px; position: relative; display: flex; gap:2px; justify-content: space-between; align-items: center;">
+        <div class="space-meta" style="height: 30px; position: relative; flex: 1; text-align: right;">
+            <div class="sapce-name" style="font-size: 16px;">空间名称</div>
+            <div class="space-info" style="font-size: 12px;">
+                <span>+</span>
+                <span>大小<span>10</span><span>GB</span><span>-</span></span>
+                <span>套餐<span>免费</span><span>-</span></span>
+                <span>到期时间<span>2028-12-31</span><span>-</span></span>
+                <span>账号<span>1234567890</span><span>-</span>
+
+            </div>
+        </div>
+        <div class="space-icon" style="width: 30px; height: 30px; position: relative; ">
+            <!-- 空间图标 -->
+        </div>
+        <div class="grip" style="width: 10px; height: 30px; position: relative;">
+            <!-- 拖拽手柄 -->
+        </div>
+        <div class="space-anchor" style="width: 10px; height: 30px; position: relative;">
+            <!-- 空间锚点 -->
+        </div>
+    </div>
+</body>
+</html>

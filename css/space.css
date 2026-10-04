@@ -1,16 +1,21 @@
 /* ---------- 空间信息 ---------- */
+/* 停用：空间节点与空间信息一起置灰 */
+.row[data-space-row].is-disabled .space-node,
+.row[data-space-row].is-disabled .space-info { opacity: .45; filter: grayscale(1); }
 .space-info {
   text-align: right;
-  align-items: flex-end;
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 12px;
   padding: 0 10px;
   font-size: 10px;   /* 整体字号减小 2 号（原约 12px） */
   border: 1px solid transparent;
   border-radius: 10px;
   transition: .15s;
 }
+.si-col { display: flex; flex-direction: column; gap: 1px; align-items: flex-end; }   /* 空间信息两列布局 */
 .space-info:hover { background: transparent; border-color: transparent; }
 .si-account { font-weight: 600; color: var(--ink); }
 .si-field { display: flex; align-items: center; gap: 4px; }
@@ -30,8 +35,8 @@
   width: 100%;
   display: flex;
   align-items: center;
-  padding: 10px;
-  border-radius: 12px;
+  padding: 6px;
+  border-radius: 8px;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
   position: relative;
@@ -40,19 +45,19 @@
 }
 .space-node:hover { background: #fff; }
 .space-icon {
-  width: 42px; height: 42px;
-  flex: 0 0 42px;
-  border-radius: 10px;
+  width: 30px; height: 30px;
+  flex: 0 0 30px;
+  border-radius: 8px;
   background: #eef6f1;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
   cursor: pointer;
   position: relative;
 }
-.space-icon svg { width: 30px; height: 30px; }
+.space-icon svg { width: 20px; height: 20px; }
 .space-icon img { width: 100%; height: 100%; object-fit: cover; }
 .space-meta { display: flex; flex-direction: row; align-items: center; gap: 0; min-width: 0; }
-.space-name { font-weight: 600; flex: 0 1 auto; min-width: 0; margin-left: 10px;}
+.space-name { font-weight: 600; flex: 0 1 auto; min-width: 0; margin-left: 8px;}
 .space-id { flex: 0 0 auto; font-size: 11px; padding: 0 1px; color: var(--ink-faint); font-family: ui-monospace, monospace; }
 .space-anchor {
   position: absolute;

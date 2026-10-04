@@ -147,25 +147,29 @@ function renderLeft() {
   html += `<div class="rows" id="left-rows">`;
   for (const sp of state.spaces) {
     const id4 = (sp.info.account || '').slice(0, 4) || '----';
-    html += `<div class="row" data-space-row="${sp.id}">`;
+    html += `<div class="row${sp.disabled ? ' is-disabled' : ''}" data-space-row="${sp.id}">`;
     html += `<div class="cell subcol-info">
       <div class="space-info">
-        <div class="si-field"><span class="si-label">账号</span>
-          <input class="inline-edit" data-path='${pstr(['spaces', sp.id, 'info', 'account'])}' value="${esc(sp.info.account)}" placeholder="—" /></div>
-        <div class="si-field"><span class="si-label">大小</span>
-          <div class="si-combo">
-            <input class="inline-edit si-pill" data-path='${pstr(['spaces', sp.id, 'info', 'size'])}' value="${esc(sp.info.size)}" placeholder="-" />
-            <div class="dd dd-unit" data-path='${pstr(['spaces', sp.id, 'info', 'unit'])}' data-options="MB|GB|TB" data-value="${esc(sp.info.unit || 'GB')}" tabindex="0"><span class="dd-val">${esc(sp.info.unit || 'GB')}</span></div>
-            <span class="brk">(</span>
-            <input class="inline-edit si-pill" data-path='${pstr(['spaces', sp.id, 'info', 'free'])}' value="${esc(sp.info.free)}" placeholder="-" />
-            <div class="dd dd-unit" data-path='${pstr(['spaces', sp.id, 'info', 'freeUnit'])}' data-options="MB|GB|TB" data-value="${esc(sp.info.freeUnit || 'GB')}" tabindex="0"><span class="dd-val">${esc(sp.info.freeUnit || 'GB')}</span></div>
-            <span class="brk">)</span>
-            <input class="inline-edit si-pill" data-path='${pstr(['spaces', sp.id, 'info', 'plan'])}' value="${esc(sp.info.plan)}" placeholder="-" />
-          </div></div>
-        <div class="si-field"><span class="si-label">用途</span>
-          <input class="inline-edit" data-path='${pstr(['spaces', sp.id, 'info', 'purpose'])}' value="${esc(sp.info.purpose)}" placeholder="—" /></div>
-        <div class="si-field"><span class="si-label">备注</span>
-          <input class="inline-edit" data-path='${pstr(['spaces', sp.id, 'info', 'remark'])}' value="${esc(sp.info.remark)}" placeholder="—" /></div>
+        <div class="si-col si-col-left">
+          <div class="si-field"><span class="si-label">用途</span>
+            <input class="inline-edit" data-path='${pstr(['spaces', sp.id, 'info', 'purpose'])}' value="${esc(sp.info.purpose)}" placeholder="—" /></div>
+          <div class="si-field"><span class="si-label">备注</span>
+            <input class="inline-edit" data-path='${pstr(['spaces', sp.id, 'info', 'remark'])}' value="${esc(sp.info.remark)}" placeholder="—" /></div>
+        </div>
+        <div class="si-col si-col-right">
+          <div class="si-field"><span class="si-label">账号</span>
+            <input class="inline-edit" data-path='${pstr(['spaces', sp.id, 'info', 'account'])}' value="${esc(sp.info.account)}" placeholder="—" /></div>
+          <div class="si-field"><span class="si-label">大小</span>
+            <div class="si-combo">
+              <input class="inline-edit si-pill" data-path='${pstr(['spaces', sp.id, 'info', 'size'])}' value="${esc(sp.info.size)}" placeholder="-" />
+              <div class="dd dd-unit" data-path='${pstr(['spaces', sp.id, 'info', 'unit'])}' data-options="MB|GB|TB" data-value="${esc(sp.info.unit || 'GB')}" tabindex="0"><span class="dd-val">${esc(sp.info.unit || 'GB')}</span></div>
+              <span class="brk">(</span>
+              <input class="inline-edit si-pill" data-path='${pstr(['spaces', sp.id, 'info', 'free'])}' value="${esc(sp.info.free)}" placeholder="-" />
+              <div class="dd dd-unit" data-path='${pstr(['spaces', sp.id, 'info', 'freeUnit'])}' data-options="MB|GB|TB" data-value="${esc(sp.info.freeUnit || 'GB')}" tabindex="0"><span class="dd-val">${esc(sp.info.freeUnit || 'GB')}</span></div>
+              <span class="brk">)</span>
+              <input class="inline-edit si-pill" data-path='${pstr(['spaces', sp.id, 'info', 'plan'])}' value="${esc(sp.info.plan)}" placeholder="-" />
+            </div></div>
+        </div>
       </div></div>`;
     const iconHTML = sp.media.icon && DEFAULT_ICONS[sp.media.icon]
       ? DEFAULT_ICONS[sp.media.icon]
