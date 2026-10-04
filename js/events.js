@@ -175,8 +175,17 @@ function initEvents() {
       ]);
     } else if (conn) {
       e.preventDefault();
+      const cid = conn.dataset.connId;
+      const c = state.connections.find(x => x.id === cid);
+      const cur = (c && c.status) || '正常';
+      const STATUSES = ['正常', '待备份', '迁移出', '迁移进'];
       openCtxMenu(e.clientX, e.clientY, [
-        { label: '删除连线', danger: true, confirm: true, onClick: () => deleteConnById(conn.dataset.connId) }
+        ...STATUSES.map(st => ({
+          label: st,
+          active: cur === st,
+          onClick: () => { const cc = state.connections.find(x => x.id === cid); if (cc) { cc.status = st; render(); } }
+        })),
+        { label: '删除连线', danger: true, confirm: true, onClick: () => deleteConnById(cid) }
       ]);
     } else if (fanGroup) {
       e.preventDefault();
