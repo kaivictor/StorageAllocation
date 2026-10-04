@@ -5,7 +5,8 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 8px 10px;
+  padding: 0 10px;
+  font-size: 10px;   /* 整体字号减小 2 号（原约 12px） */
   border: 1px solid transparent;
   border-radius: 10px;
   transition: .15s;
@@ -14,15 +15,15 @@
 .si-account { font-weight: 600; color: var(--ink); }
 .si-field { display: flex; align-items: center; gap: 4px; }
 .si-field .inline-edit { flex: 0 1 auto; min-width: 10px; max-width: 200px; width: auto; field-sizing: content; padding: 0; }
-.si-label { flex: 0 0 auto; color: var(--ink-faint); font-size: 12px; }
-.si-combo { display: inline-flex; align-items: center; gap: 0; font-size: 12px; color: var(--ink-soft); }
+.si-label { flex: 0 0 auto; color: var(--ink-faint); font-size: 10px; }
+.si-combo { display: inline-flex; align-items: center; gap: 0; font-size: 10px; color: var(--ink-soft); }
 .si-combo .brk { color: var(--ink-faint); }
 .si-combo input.si-pill { width: auto; min-width: 10px; field-sizing: content; text-align: center; padding: 1px 0; border-left: none; border-right: none; }
 .si-combo input.si-unit { width: auto; min-width: 10px; field-sizing: content; text-align: center; padding: 1px 0; border-left: none; border-right: none; }
 .si-combo .dd-unit { padding: 1px 0; }   /* 单位下拉与相邻 pill 垂直对齐 */
 .si-purpose { color: var(--ink-soft); }
-.si-remark { color: var(--ink-faint); font-size: 12px; font-style: italic; }
-.si-exclude { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ink-soft); cursor: pointer; }
+.si-remark { color: var(--ink-faint); font-size: 10px; font-style: italic; }
+.si-exclude { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--ink-soft); cursor: pointer; }
 .si-exclude input { width: 14px; height: 14px; }
 /* ---------- 空间节点 ---------- */
 .space-node {
