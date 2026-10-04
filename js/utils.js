@@ -76,6 +76,21 @@ function pathDisplayValue(p) {
 function recordPathIds(rid) { return state.pathRecords.filter(pr => pr.recordId === rid).map(pr => pr.pathId); }
 /* 某路径关联的全部记录 id（多对多） */
 function pathRecordIds(pid) { return state.pathRecords.filter(pr => pr.pathId === pid).map(pr => pr.recordId); }
+/* 某路径及其全部上级与空间的累计连线数（用于路径锚点状态着色）；
+   沿 p.parent 链向上收集所有祖先 id，统计 state.connections 中命中这些 pathId 的连线总数。 */
+function pathConnCount(pid) {
+  const ids = new Set();
+  let cur = getPath(pid), guard = 0;
+  while (cur && guard++ < 1000) { ids.add(cur.id); cur = cur.parent ? getPath(cur.parent) : null; }
+  let n = 0;
+  for (const c of state.connections) if (ids.has(c.pathId)) n++;
+  return n;
+}
+/* 路径锚点状态类：0 条=红，1 条=橙，2 条及以上=绿 */
+function anchorStateClass(pid) {
+  const n = pathConnCount(pid);
+  return n >= 2 ? 'anchor-green' : n === 1 ? 'anchor-orange' : 'anchor-red';
+}
 
 /* 子路径先序遍历（父节点必在其子树之前）；用于保持树结构的有效顺序 */
 /* 路径扁平重排：把单个路径 pid 移动到 beforePid 之前（null=末尾），仅调整 state.paths 顺序。

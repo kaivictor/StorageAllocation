@@ -52,6 +52,15 @@
 .lane-head.align-right  { justify-content: flex-end; }
 .lane-head.align-center { justify-content: center; }
 .lane-head.align-left   { justify-content: flex-start; }
+/* 路径泳道头左缘的“左右分组间距”拖拽手柄：默认隐藏，鼠标靠近（lane-head hover）显示 */
+.lane-move {
+  position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
+  cursor: ew-resize; color: var(--ink-faint);
+  opacity: 0; font-size: 13px; line-height: 1; user-select: none; touch-action: none;
+}
+.lane-head:hover .lane-move { opacity: 1; }
+.lane-move:active,
+.lane-move.dragging { opacity: 1; color: var(--brand); }
 .path-stack { display: flex; flex-direction: column; gap: 14px; position: relative; padding-left: 18px; }
 .attr-stack { position: relative; }
 /* 数据排序手柄：位于路径列左侧留白处、与路径节点同高（top 由 JS 设置） */

@@ -155,6 +155,31 @@ function initEvents() {
     document.addEventListener('mouseup', onUp);
   });
 
+  /* 路径泳道头左缘的“左右分组间距”拖拽手柄：左右拖动改变 .group-right 的 margin-left */
+  document.addEventListener('mousedown', (e) => {
+    const move = e.target.closest('.lane-move');
+    if (!move) return;
+    e.preventDefault();
+    const group = document.querySelector('.group-right');
+    if (!group) return;
+    const startX = e.clientX;
+    const startM = parseFloat(getComputedStyle(group).marginLeft) || 0;
+    const onMove = (ev) => {
+      const m = Math.max(0, startM + (ev.clientX - startX));
+      group.style.marginLeft = m + 'px';
+      if (typeof drawConnections === 'function') drawConnections();   // 实时跟随重绘连线
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      move.classList.remove('dragging');
+      render();   // 最终重绘连线与状态
+    };
+    move.classList.add('dragging');
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
   /* 右击上下文菜单：空间 / 连线 / 路径 / 记录 / 结构 */
   document.addEventListener('contextmenu', (e) => {
     const spaceNode = e.target.closest('.space-node');

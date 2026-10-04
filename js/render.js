@@ -193,7 +193,7 @@ function renderRight() {
   let html = `<div class="right-canvas" id="right-canvas">`;
 
   /* 1) 路径泳道：所有路径按 state.paths 顺序竖向排布（扁平列表，无数据包裹） */
-  html += `<div class="lane lane-path"><div class="lane-head align-center">路径</div><div class="path-stack">`;
+  html += `<div class="lane lane-path"><div class="lane-head align-center"><span class="lane-move" title="拖动调整左右分组间距">⇔</span>路径</div><div class="path-stack">`;
   for (const p of state.paths) html += pathNodeHTML(p.id, p);
   html += `</div></div>`;
 
@@ -419,7 +419,7 @@ function pathNodeHTML(pid, p) {
   }).filter(Boolean);
   const pathTitle = linkedSpaces.length ? linkedSpaces.join('\n') : '（未关联空间）';
   return `<div class="${cls}"${indentStyle} data-path-id="${pid}" data-data-id="${pid}" title="${esc(pathTitle)}">
-    <span class="path-anchor" data-path-id="${pid}" title="拖拽到空间建立连线"></span>
+    <span class="path-anchor ${anchorStateClass(pid)}" data-path-id="${pid}" title="拖拽到空间建立连线"></span>
     ${grip}
     ${locked && prefix ? `<span class="path-prefix">${esc(prefix)}</span>` : ''}
     <input class="inline-edit path-input" data-path='${pstr(['paths', pid, 'text'])}' value="${esc(displayText)}" />

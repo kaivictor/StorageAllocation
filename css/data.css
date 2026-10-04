@@ -93,6 +93,10 @@
   cursor: crosshair; flex: 0 0 auto;
 }
 .path-anchor:hover { transform: translateY(-50%) scale(1.3); }
+/* 路径锚点状态色：0 条=红，1 条=橙，2 条及以上=绿（基于路径及其全部上级与空间的累计连线数） */
+.path-anchor.anchor-red { background: #e23b3b; box-shadow: 0 0 0 1px #e23b3b; }
+.path-anchor.anchor-orange { background: #f5a623; box-shadow: 0 0 0 1px #f5a623; }
+.path-anchor.anchor-green { background: #2fae57; box-shadow: 0 0 0 1px #2fae57; }
 .path-add-sib {
   margin-left: auto;
   font-size: 10px; padding: 1px 6px; border-radius: 5px;
