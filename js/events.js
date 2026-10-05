@@ -573,6 +573,53 @@ function initEvents() {
   $('#btn-add-space').addEventListener('click', addSpace);
   $('#btn-add-data').addEventListener('click', addData);
   $('#btn-export').addEventListener('click', exportData);
+  $('#btn-export-img').addEventListener('click', async function () {
+    // 界面截图：SnapDOM（@zumer/snapdom）把 #panel 捕获为 SVG 再光栅化为 PNG。
+    // 选它而非 html-to-image：SnapDOM 自己处理了 width:max-content 重排与表单实时值，
+    // 无需冻结宽度、无需改动 DOM——而 html-to-image 必须靠"冻结所有元素宽度"补丁才能不错位，
+    // 且任何 DOM 插入都会改变 :nth-child 匹配而破坏布局。
+    const btn = this; const old = btn.textContent; btn.disabled = true; btn.textContent = '导出中…';
+    try {
+      const panel = document.getElementById('panel');
+      if (!panel || typeof snapdom === 'undefined') throw new Error('导出组件未加载');
+      const prev = { h: panel.style.height, mh: panel.style.maxHeight, ov: panel.style.overflow, fl: panel.style.flex };
+      panel.style.height = 'auto'; panel.style.maxHeight = 'none'; panel.style.overflow = 'visible'; panel.style.flex = '0 0 auto';
+      if (typeof render === 'function') render();
+      await new Promise((r) => setTimeout(r, 200));
+      // 输出分辨率：相对 CSS 像素的倍率。SnapDOM 的 scale 会再乘上 devicePixelRatio，
+      // 故实际传入 TARGET / dpr 才能得到准确的 TARGET 倍（10 倍 ≈ 16030×4030，适合打印/放大）。
+      // 面积上限保护：Chrome 单画布约 2.68 亿像素，超出则自动降倍率，避免导出失败。
+      const TARGET = 10, MAXPX = 2e8;
+      const dpr = window.devicePixelRatio || 1;
+      const rect = panel.getBoundingClientRect();
+      const areaCss = Math.max(1, rect.width * rect.height);
+      let k = TARGET / dpr;
+      if (areaCss * TARGET * TARGET > MAXPX) k = Math.sqrt(MAXPX / areaCss) / dpr;
+      const canvas = await snapdom.toCanvas(panel, {
+        embedFonts: true,
+        backgroundColor: getComputedStyle(document.body).backgroundColor,
+        scale: k,
+      });
+      panel.style.height = prev.h; panel.style.maxHeight = prev.mh; panel.style.overflow = prev.ov; panel.style.flex = prev.fl;
+      if (typeof render === 'function') render();
+      const d = new Date(), pad = (n) => String(n).padStart(2, '0');
+      const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+      await new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          if (!blob) { alert('导出图片失败：生成 PNG 失败'); resolve(); return; }
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = `storage-allocation_${stamp}.png`;
+          a.click();
+          setTimeout(() => { URL.revokeObjectURL(url); resolve(); }, 1200);
+        }, 'image/png');
+      });
+    } catch (e) {
+      alert('导出图片失败：' + (e && e.message ? e.message : e));
+    } finally {
+      btn.disabled = false; btn.textContent = old;
+    }
+  });
   $('#btn-import').addEventListener('click', () => $('#file-import').click());
   $('#file-import').addEventListener('change', importData);
   $('#btn-clear').addEventListener('click', () => {
